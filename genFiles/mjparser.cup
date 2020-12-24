@@ -48,12 +48,18 @@ scan with {:
 	return s;
 :}
 
-terminal CONTINUE, RETURN, VOID, ADD, SUB, MUL, DIV, MOD, EQUALS, NEQUALS, GRT, GRTEQUAL, LESS, LESSEQUAL, AND, OR, INC, DECR, LBRACKET, RBRACKET;
-terminal EQUAL, SEMICOLN, COMMA, LPAREN, RPAREN, LBRACE, RBRACE, PROGRAM, BREAK, PRINT, ELSE, CONST, IF, NEW, READ;
-terminal SWITCH, CASE;
-terminal DDOTS;
-terminal QMARK;
-terminal DO, WHILE;
+terminal PROGRAM, RETURN, VOID, LBRACKET, RBRACKET;
+terminal SEMICOLN,EQUAL, COMMA, LPAREN, RPAREN, LBRACE, RBRACE, CONST, NEW;
+terminal PRINT,READ;
+
+terminal ADD, SUB, MUL, DIV, MOD, INC, DECR,;
+terminal EQUALS, NEQUALS, GRT, GRTEQUAL, LESS, LESSEQUAL, AND, OR;
+
+terminal IF, ELSE, SWITCH, CASE;
+terminal DO, WHILE, BREAK, CONTINUE;
+
+//a?b:c;
+terminal DDOTS,QMARK;
 
 terminal String IDENT;
 terminal Integer NUM;
@@ -105,6 +111,11 @@ non terminal Mulop;
 non terminal Designator;
 
 precedence left ELSE;
+
+//terminali allcaps
+//zagrade na desnoj strani su ime klase u ast
+
+
 
 Program ::= (Program) PROGRAM IDENT:programName ConstVarDeclRepeat LBRACE MethodDeclRepeat RBRACE;
 

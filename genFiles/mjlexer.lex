@@ -35,6 +35,8 @@ import java_cup.runtime.Symbol;
 "\r\n" 	{ }
 "\f" 	{ }
 
+//terminali iz mjparser
+//skripta da ih updatuje???
 
 "continue"  { return newSymbol(sym.CONTINUE, yytext());}
 "void" 		{ return newSymbol(sym.VOID, yytext()); }
