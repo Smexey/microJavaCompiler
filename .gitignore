@@ -1,6 +1,6 @@
-./logs
+logs
 
-./src/Yylex.java
-./src/ast
-./src/Parser.java
-./src/sym.java
+src/Yylex.java
+src/ast
+src/Parser.java
+src/sym.java
