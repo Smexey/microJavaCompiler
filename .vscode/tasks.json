@@ -13,6 +13,13 @@
             ]
         },
         {
+            "label": "clean",
+            "dependsOn": [
+                "lexerClean",
+                "parserClean"
+            ]
+        },
+        {
             "label": "lexerGen",
             "command": "java",
             "args": [
