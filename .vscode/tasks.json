@@ -17,10 +17,10 @@
             "command": "java",
             "args": [
                 "-jar",
-                "${workspaceFolder}\\lib\\JFlex.jar",
+                "${workspaceFolder}/lib/JFlex.jar",
                 "-d",
-                "${workspaceFolder}\\src\\compiler",
-                "${workspaceFolder}\\genFiles\\mjlexer.lex"
+                "${workspaceFolder}/src/compiler",
+                "${workspaceFolder}/genFiles/mjlexer.lex"
             ],
             "group": "build",
             "dependsOn": "lexClean"
@@ -30,7 +30,7 @@
             "command": "rm",
             "args": [
                 "-f",
-                "${workspaceFolder}\\src\\compiler\\Yylex.java"
+                "${workspaceFolder}/src/compiler/Yylex.java"
             ]
         },
         {
@@ -38,9 +38,9 @@
             "command": "java",
             "args": [
                 "-jar",
-                "${workspaceFolder}\\lib\\cup_v10k.jar",
+                "${workspaceFolder}/lib/cup_v10k.jar",
                 "-destdir",
-                "${workspaceFolder}\\src\\compiler",
+                "${workspaceFolder}/src/compiler",
                 "-package",
                 "compiler",
                 "-ast",
@@ -48,7 +48,7 @@
                 "-parser",
                 "Parser",
                 "-buildtree",
-                "${workspaceFolder}\\genFiles\\mjparser.cup"
+                "${workspaceFolder}/genFiles/mjparser.cup"
             ],
             "group": "build",
             "dependsOn": "parserClean"
@@ -58,24 +58,24 @@
             "command": "rm",
             "args": [
                 "-rf",
-                "${workspaceFolder}\\src\\compiler\\Parser.java",
-                "${workspaceFolder}\\src\\compiler\\sym.java",
-                "${workspaceFolder}\\src\\ast\\"
+                "${workspaceFolder}/src/compiler/Parser.java",
+                "${workspaceFolder}/src/compiler/sym.java",
+                "${workspaceFolder}/src/ast/"
             ],
         },
         {
             "label": "fixAstPackage",
             // "windows": {
             //     "type": "shell",
-            //     "command": "foreach($file in Get-ChildItem ${workspaceFolder}\\src\\ast *.java) { (Get-Content ${workspaceFolder}\\src\\ast\\$file).Replace('src.ast','ast') | Set-Content ${workspaceFolder}\\src\\ast\\$file}",
+            //     "command": "foreach($file in Get-ChildItem ${workspaceFolder}/src/ast *.java) { (Get-Content ${workspaceFolder}/src/ast/$file).Replace('src.ast','ast') | Set-Content ${workspaceFolder}/src/ast/$file}",
             //     "args": []
             // },
             "command": "sed",
             "args": [
                 "-i",
                 "'s/src.ast/ast/g'",
-                // mora ovakav path na win
-                "src/ast/*.java"
+                // mora ovakav path 
+                "${workspaceFolder}/src/ast/*.java"
             ],
             "dependsOn": "parserGen"
         }
