@@ -9,7 +9,7 @@
             },
             "dependsOn": [
                 "lexerGen",
-                "fixAstPackage",
+                "fixAstPackage"
             ]
         },
         {
@@ -20,7 +20,7 @@
                 "${workspaceFolder}\\lib\\JFlex.jar",
                 "-d",
                 "${workspaceFolder}\\src\\compiler",
-                "${workspaceFolder}\\genFiles\\mjlexer.lex", //input files
+                "${workspaceFolder}\\genFiles\\mjlexer.lex"
             ],
             "group": "build",
             "dependsOn": "lexClean"
@@ -30,8 +30,8 @@
             "command": "rm",
             "args": [
                 "-f",
-                "${workspaceFolder}\\src\\compiler\\Yylex.java", //output package
-            ],
+                "${workspaceFolder}\\src\\compiler\\Yylex.java"
+            ]
         },
         {
             "label": "parserGen",
@@ -44,33 +44,39 @@
                 "-package",
                 "compiler",
                 "-ast",
-                "src.ast", //mora da se replacuje posle -> fixAstPackage
+                "src.ast",
                 "-parser",
-                "Parser", //classname
-                // "-dump_states",
+                "Parser",
                 "-buildtree",
                 "${workspaceFolder}\\genFiles\\mjparser.cup"
             ],
             "group": "build",
-            "dependsOn": "parserClean",
+            "dependsOn": "parserClean"
         },
         {
             "label": "parserClean",
             "command": "rm",
             "args": [
-                "-f",
+                "-rf",
                 "${workspaceFolder}\\src\\compiler\\Parser.java",
+                "${workspaceFolder}\\src\\compiler\\sym.java",
+                "${workspaceFolder}\\src\\ast\\"
             ],
         },
         {
             "label": "fixAstPackage",
-            "type": "shell",
-            "windows": {
-                //powershell replace
-                //nije nesto prenosivo
-                //valjalo bi odvojiti u fajl
-                "command": "foreach($file in Get-ChildItem ${workspaceFolder}\\src\\ast *.java) { (Get-Content ${workspaceFolder}\\src\\ast\\$file).Replace('src.ast','ast') | Set-Content ${workspaceFolder}\\src\\ast\\$file}"
-            },
+            // "windows": {
+            //     "type": "shell",
+            //     "command": "foreach($file in Get-ChildItem ${workspaceFolder}\\src\\ast *.java) { (Get-Content ${workspaceFolder}\\src\\ast\\$file).Replace('src.ast','ast') | Set-Content ${workspaceFolder}\\src\\ast\\$file}",
+            //     "args": []
+            // },
+            "command": "sed",
+            "args": [
+                "-i",
+                "'s/src.ast/ast/g'",
+                // mora ovakav path na win
+                "src/ast/*.java"
+            ],
             "dependsOn": "parserGen"
         }
     ]
