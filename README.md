@@ -1,6 +1,7 @@
 ## Notes
 
-requires gnu buildtools: [rm]
+requires gnu buildtools: [rm,sed]
+
 defaultBuild generise lexer, parser, ast
 
 

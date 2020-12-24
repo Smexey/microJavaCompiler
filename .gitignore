@@ -3,4 +3,5 @@
 /src/Yylex.java
 /src/ast
 /src/compiler/Parser.java
+/src/compiler/Yylex.java
 /src/compiler/sym.java
