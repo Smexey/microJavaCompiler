@@ -1,0 +1,16 @@
+INFO  21:08:23,370 - Compiling source file: C:\Users\pajse\Desktop\ppProj\microJavaCompiler\testFiles\program.mj
+INFO  21:08:23,375 - #1 program
+INFO  21:08:23,389 - #4 MJProgram
+INFO  21:08:23,389 - #4 int
+INFO  21:08:23,390 - #4 x
+INFO  21:08:23,390 - #8 ,
+INFO  21:08:23,390 - #4 y
+INFO  21:08:23,406 - #9 ;
+INFO  21:08:23,407 - #12 {
+INFO  21:08:23,408 - #15 void
+INFO  21:08:23,408 - #4 main
+INFO  21:08:23,408 - #10 (
+INFO  21:08:23,409 - #11 )
+INFO  21:08:23,409 - #12 {
+INFO  21:08:23,410 - #13 }
+INFO  21:08:23,410 - #13 }

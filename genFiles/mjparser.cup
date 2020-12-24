@@ -1,0 +1,224 @@
+package compiler;
+
+import java_cup.runtime.*;
+import org.apache.log4j.*;
+import ast.*;
+
+
+
+parser code {:
+	boolean errorDetected = false;
+	Logger log = Logger.getLogger(getClass());
+
+    // slede redefinisani metodi za prijavu gresaka radi izmene teksta poruke
+    public void report_fatal_error(String message, Object info) throws java.lang.Exception {
+      done_parsing();
+      report_error(message, info);
+    }
+
+    public void syntax_error(Symbol cur_token) {
+        report_error("\nSintaksna greska", cur_token);
+    }
+
+    public void unrecovered_syntax_error(Symbol cur_token) throws java.lang.Exception {
+        report_fatal_error("Fatalna greska, parsiranje se ne moze nastaviti", cur_token);
+    }
+
+    public void report_error(String message, Object info) {
+    	errorDetected = true;
+    	StringBuilder msg = new StringBuilder(message);
+    	if (info instanceof Symbol)
+            msg.append (" na liniji ").append(((Symbol)info).left);
+        log.error(msg.toString());
+    }
+
+    public void report_info(String message, Object info) {
+    	StringBuilder msg = new StringBuilder(message);
+    	if (info instanceof Symbol)
+            msg.append (" na liniji ").append(((Symbol)info).left);
+        log.info(msg.toString());
+    }
+
+:}
+// preko yylex  
+scan with {:
+	Symbol s = this.getScanner().next_token();
+	if (s != null && s.value != null)
+		log.info(s.toString() + " " + s.value.toString());
+	return s;
+:}
+
+terminal CONTINUE, RETURN, VOID, ADD, SUB, MUL, DIV, MOD, EQUALS, NEQUALS, GRT, GRTEQUAL, LESS, LESSEQUAL, AND, OR, INC, DECR, LBRACKET, RBRACKET;
+terminal EQUAL, SEMICOLN, COMMA, LPAREN, RPAREN, LBRACE, RBRACE, PROGRAM, BREAK, PRINT, ELSE, CONST, IF, NEW, READ;
+terminal SWITCH, CASE;
+terminal DDOTS;
+terminal QMARK;
+terminal DO, WHILE;
+
+terminal String IDENT;
+terminal Integer NUM;
+terminal Object BOOLEAN;
+terminal Character CHAR;
+
+non terminal Program;
+non terminal ConstVarDeclRepeat;
+non terminal MethodDeclRepeat;
+non terminal ConstVarDecl;
+non terminal ConstDecl, VarDecl;
+non terminal Type;
+non terminal ConstValue;
+non terminal ConstDeclRepeat;
+non terminal OptArray;
+non terminal VarDeclRepeat;
+non terminal MethodDecl;
+non terminal MethodType;
+non terminal ElseStatementOptional;
+non terminal FormParsOptional, FormPars;
+non terminal FormParDecl;
+non terminal ArrayDeclOptional;
+non terminal FormParsRepeat;
+non terminal StatementRepeat;
+non terminal Statement;
+non terminal PrintWidthOptional;
+non terminal CaseRepeat;
+non terminal DesignatorStatement;
+non terminal Assignop;
+non terminal ActParsOptional;
+non terminal ActPars;
+non terminal ActParsExprRepeat;
+non terminal Condition;
+non terminal CondTermOrRepeat;
+non terminal CondTerm;
+non terminal CondFactorAndRepeat;
+non terminal CondFact;
+non terminal RelopExprOptional;
+non terminal Relop;
+non terminal ExprOptional;
+non terminal Expr;
+non terminal MinusOptional;
+non terminal TermAddopRepeat;
+non terminal Term;
+non terminal FactorMulopRepeat;
+non terminal Factor;
+non terminal Addop;
+non terminal Mulop;
+non terminal Designator;
+
+precedence left ELSE;
+
+Program ::= (Program) PROGRAM IDENT:programName ConstVarDeclRepeat LBRACE MethodDeclRepeat RBRACE;
+
+ConstVarDeclRepeat ::= (ConstVarDeclRepeatExists) ConstVarDeclRepeat ConstVarDecl
+                     |
+                     (ConstVarDeclRepeatEmpty) /* empty */
+                     ;
+
+ConstVarDecl ::= ConstDecl | VarDecl;
+ConstDecl ::= CONST Type IDENT EQUAL ConstValue ConstDeclRepeat SEMICOLN;
+ConstValue ::= NUM | CHAR | BOOLEAN;
+ConstDeclRepeat ::= ConstDeclRepeat COMMA IDENT EQUAL ConstValue | /* empty */;
+
+Type ::= IDENT;
+
+VarDecl ::= Type IDENT OptArray VarDeclRepeat SEMICOLN;
+VarDeclRepeat ::= VarDeclRepeat COMMA IDENT OptArray | /* empty */;
+
+MethodDeclRepeat ::= MethodDeclRepeat MethodDecl | /* empty */;
+
+MethodType ::= Type | VOID;
+MethodDecl ::= MethodType IDENT LPAREN FormParsOptional RPAREN VarDeclRepeat LBRACE StatementRepeat RBRACE;
+
+FormParsOptional ::= FormPars | /* empty */;
+FormParDecl ::= Type IDENT ArrayDeclOptional;
+FormPars ::= FormParDecl FormParsRepeat;
+ArrayDeclOptional ::= LBRACKET RBRACKET | /* empty */;
+FormParsRepeat ::= FormParsRepeat COMMA FormParDecl | /* empty */;
+
+StatementRepeat ::= StatementRepeat Statement | /* empty */;
+Statement ::= DesignatorStatement SEMICOLN
+            |
+            IF LPAREN Condition RPAREN Statement ElseStatementOptional
+            |
+            DO Statement WHILE LPAREN Condition RPAREN SEMICOLN
+            |
+            SWITCH LPAREN Expr RPAREN LBRACE CaseRepeat RBRACE
+            |
+            BREAK SEMICOLN
+            |
+            CONTINUE SEMICOLN
+            |
+            RETURN ExprOptional SEMICOLN
+            |
+            READ LPAREN Designator RPAREN SEMICOLN
+            |
+            PRINT LPAREN Expr PrintWidthOptional RPAREN SEMICOLN
+            |
+            LBRACE StatementRepeat RBRACE
+            ;
+
+ElseStatementOptional ::= ELSE Statement;
+
+PrintWidthOptional ::= COMMA NUM | /* empty */;
+
+CaseRepeat ::= CaseRepeat CASE NUM DDOTS StatementRepeat | /* empty */;
+
+DesignatorStatement ::= Designator Assignop Expr
+                      |
+                      Designator LPAREN ActParsOptional RPAREN
+                      |
+                      Designator INC
+                      |
+                      Designator DECR
+                      ;
+
+Assignop ::= EQUAL;
+ActParsOptional ::= ActPars | /* empty */;
+ActPars ::= Expr ActParsExprRepeat;
+ActParsExprRepeat ::= ActParsExprRepeat COMMA Expr;
+
+
+Condition ::= CondTerm CondTermOrRepeat;
+CondTermOrRepeat ::= CondTermOrRepeat OR CondTerm | /* empty */;
+
+CondTerm ::= CondFact CondFactorAndRepeat;
+CondFactorAndRepeat ::= CondFactorAndRepeat AND CondFact | /* empty */;
+CondFact ::= Expr RelopExprOptional;
+RelopExprOptional ::= Relop Expr | /* empty */;
+Relop ::= EQUALS | NEQUALS | GRT | GRTEQUAL | LESS | LESSEQUAL;
+
+ExprOptional ::= Expr | /* empty */;
+
+Expr::= MinusOptional Term TermAddopRepeat;
+
+MinusOptional ::= SUB | /* empty */;
+
+TermAddopRepeat ::= TermAddopRepeat Addop Term | /* empty */;
+
+Term ::= Factor FactorMulopRepeat;
+
+FactorMulopRepeat ::= FactorMulopRepeat Mulop Factor| /* empty */;
+
+Factor ::= Designator
+         |
+         Designator LPAREN ActParsOptional RPAREN
+         |
+         NUM
+         |
+         CHAR
+         |
+         BOOLEAN
+         |
+         NEW Type LPAREN Expr RPAREN
+         |
+         LPAREN Expr RPAREN
+         ;
+
+
+/*operators*/
+
+Addop ::= ADD | SUB;
+Mulop ::= MUL | DIV | MOD;
+
+
+
+Designator ::= IDENT | IDENT LBRACKET Expr RBRACKET;

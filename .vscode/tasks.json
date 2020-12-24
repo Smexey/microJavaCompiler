@@ -1,0 +1,77 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "generateCode",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOn": [
+                "lexerGen",
+                "fixAstPackage",
+            ]
+        },
+        {
+            "label": "lexerGen",
+            "command": "java",
+            "args": [
+                "-jar",
+                "${workspaceFolder}\\lib\\JFlex.jar",
+                "-d",
+                "${workspaceFolder}\\src\\compiler",
+                "${workspaceFolder}\\genFiles\\mjlexer.lex", //input files
+            ],
+            "group": "build",
+            "dependsOn": "lexClean"
+        },
+        {
+            "label": "lexClean",
+            "command": "rm",
+            "args": [
+                "-f",
+                "${workspaceFolder}\\src\\compiler\\Yylex.java", //output package
+            ],
+        },
+        {
+            "label": "parserGen",
+            "command": "java",
+            "args": [
+                "-jar",
+                "${workspaceFolder}\\lib\\cup_v10k.jar",
+                "-destdir",
+                "${workspaceFolder}\\src\\compiler",
+                "-package",
+                "compiler",
+                "-ast",
+                "src.ast", //mora da se replacuje posle -> fixAstPackage
+                "-parser",
+                "Parser", //classname
+                // "-dump_states",
+                "-buildtree",
+                "${workspaceFolder}\\genFiles\\mjparser.cup"
+            ],
+            "group": "build",
+            "dependsOn": "parserClean",
+        },
+        {
+            "label": "parserClean",
+            "command": "rm",
+            "args": [
+                "-f",
+                "${workspaceFolder}\\src\\compiler\\Parser.java",
+            ],
+        },
+        {
+            "label": "fixAstPackage",
+            "type": "shell",
+            "windows": {
+                //powershell replace
+                //nije nesto prenosivo
+                //valjalo bi odvojiti u fajl
+                "command": "foreach($file in Get-ChildItem ${workspaceFolder}\\src\\ast *.java) { (Get-Content ${workspaceFolder}\\src\\ast\\$file).Replace('src.ast','ast') | Set-Content ${workspaceFolder}\\src\\ast\\$file}"
+            },
+            "dependsOn": "parserGen"
+        }
+    ]
+}
