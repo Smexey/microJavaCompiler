@@ -1,14 +1,15 @@
-package compiler;
+package rs.ac.bg.etf.pp1;
 
 import java_cup.runtime.*;
 import org.apache.log4j.*;
-import ast.*;
+import rs.ac.bg.etf.pp1.ast.*;
 
 
 
 parser code {:
 	boolean errorDetected = false;
 	Logger log = Logger.getLogger(getClass());
+
 
     // slede redefinisani metodi za prijavu gresaka radi izmene teksta poruke
     public void report_fatal_error(String message, Object info) throws java.lang.Exception {
@@ -40,7 +41,7 @@ parser code {:
     }
 
 :}
-// preko yylex  
+
 scan with {:
 	Symbol s = this.getScanner().next_token();
 	if (s != null && s.value != null)
@@ -48,18 +49,12 @@ scan with {:
 	return s;
 :}
 
-terminal PROGRAM, RETURN, VOID, LBRACKET, RBRACKET;
-terminal SEMICOLN,EQUAL, COMMA, LPAREN, RPAREN, LBRACE, RBRACE, CONST, NEW;
-terminal PRINT,READ;
-
-terminal ADD, SUB, MUL, DIV, MOD, INC, DECR;
-terminal EQUALS, NEQUALS, GRT, GRTEQUAL, LESS, LESSEQUAL, AND, OR;
-
-terminal IF, ELSE, SWITCH, CASE;
-terminal DO, WHILE, BREAK, CONTINUE;
-
-//a?b:c;
-terminal DDOTS,QMARK;
+terminal CONTINUE, RETURN, VOID, ADD, SUB, MUL, DIV, MOD, EQUALS, NEQUALS, GRT, GRTEQUAL, LESS, LESSEQUAL, AND, OR, INC, DECR, LBRACKET, RBRACKET;
+terminal EQUAL, SEMICOLN, COMMA, LPAREN, RPAREN, LBRACE, RBRACE, PROGRAM, BREAK, PRINT, ELSE, CONST, IF, NEW, READ;
+terminal SWITCH, CASE;
+terminal DDOTS;
+terminal QMARK;
+terminal DO, WHILE;
 
 terminal String IDENT;
 terminal Integer NUM;
@@ -113,12 +108,7 @@ non terminal Mulop Mulop;
 non terminal Designator Designator;
 
 precedence left ELSE;
-
-//terminali allcaps
-//zagrade na desnoj strani su ime klase u ast
-
-
-
+// preko yylex  
 Program ::= (Program) PROGRAM IDENT:programName ConstVarDeclRepeat:C1 LBRACE MethodDeclRepeat:M2 RBRACE {: RESULT=new Program(programName, C1, M2); RESULT.setLine(programNameleft); :};
 
 ConstVarDeclRepeat ::= (ConstVarDeclRepeatExists) ConstVarDeclRepeat:C1 ConstVarDecl:C2 {: RESULT=new ConstVarDeclRepeatExists(C1, C2); RESULT.setLine(C1left); :}
@@ -225,13 +215,7 @@ Factor ::= Designator:D1 {: RESULT=new FactorDerived1(D1); RESULT.setLine(D1left
          |
          LPAREN Expr:E1 RPAREN {: RESULT=new FactorDerived7(E1); RESULT.setLine(E1left); :}
          ;
-
-
-/*operators*/
-
 Addop ::= ADD {: RESULT=new AddopDerived1(); :} | SUB {: RESULT=new AddopDerived2(); :};
 Mulop ::= MUL {: RESULT=new MulopDerived1(); :} | DIV {: RESULT=new MulopDerived2(); :} | MOD {: RESULT=new MulopDerived3(); :};
-
-
 
 Designator ::= IDENT:I1 {: RESULT=new DesignatorDerived1(I1); RESULT.setLine(I1left); :} | IDENT:I1 LBRACKET Expr:E2 RBRACKET {: RESULT=new DesignatorDerived2(I1, E2); RESULT.setLine(I1left); :};

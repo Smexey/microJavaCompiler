@@ -34,6 +34,10 @@ Table val;
 		f(c, x, i);
 
 		read(x);
+		
+		aasdfasasf = -size;
+
+		foo(x,y);
 
 		do{
 			if(x <= 0) break;

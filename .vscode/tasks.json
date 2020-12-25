@@ -55,7 +55,8 @@
                 "-parser",
                 "Parser",
                 "-buildtree",
-                "${workspaceFolder}/genFiles/mjparser.cup"
+                // "-dump_states",
+                "${workspaceFolder}/genFiles/mjparser.cup",
             ],
             "group": "build",
             "dependsOn": "parserClean"

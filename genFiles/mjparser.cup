@@ -48,67 +48,46 @@ scan with {:
 	return s;
 :}
 
-terminal PROGRAM, RETURN, VOID, LBRACKET, RBRACKET;
-terminal SEMICOLN,EQUAL, COMMA, LPAREN, RPAREN, LBRACE, RBRACE, CONST, NEW;
+terminal PROGRAM, RETURN, VOID, LBRACKET, RBRACKET, CLASS, EXTENDS;
+
+terminal SEMICOLN,EQUAL, COMMA, DOT, LPAREN, RPAREN, LBRACE, RBRACE, CONST, NEW;
 terminal PRINT,READ;
 
-terminal ADD, SUB, MUL, DIV, MOD, INC, DECR,;
+terminal ADD, SUB, MUL, DIV, MOD, INC, DECR;
 terminal EQUALS, NEQUALS, GRT, GRTEQUAL, LESS, LESSEQUAL, AND, OR;
 
 terminal IF, ELSE, SWITCH, CASE;
 terminal DO, WHILE, BREAK, CONTINUE;
 
-//a?b:c;
-terminal DDOTS,QMARK;
+terminal DDOTS, QMARK;
 
+
+//basetypes
+//popraviti boolean?
 terminal String IDENT;
 terminal Integer NUM;
 terminal Object BOOLEAN;
 terminal Character CHAR;
 
-non terminal Program;
-non terminal ConstVarDeclRepeat;
-non terminal MethodDeclRepeat;
-non terminal ConstVarDecl;
-non terminal ConstDecl, VarDecl;
+
+non terminal Program, ConstVarClassDeclRepeat, ConstVarClassDecl, ConstDecl, ClassDecl;
+
 non terminal Type;
-non terminal ConstValue;
-non terminal ConstDeclRepeat;
-non terminal OptArray;
-non terminal VarDeclRepeat;
-non terminal MethodDecl;
-non terminal MethodType;
-non terminal ElseStatementOptional;
-non terminal FormParsOptional, FormPars;
-non terminal FormParDecl;
-non terminal ArrayDeclOptional;
-non terminal FormParsRepeat;
-non terminal StatementRepeat;
-non terminal Statement;
-non terminal PrintWidthOptional;
-non terminal CaseRepeat;
-non terminal DesignatorStatement;
-non terminal Assignop;
-non terminal ActParsOptional;
-non terminal ActPars;
-non terminal ActParsExprRepeat;
-non terminal Condition;
-non terminal CondTermOrRepeat;
-non terminal CondTerm;
-non terminal CondFactorAndRepeat;
-non terminal CondFact;
-non terminal RelopExprOptional;
-non terminal Relop;
-non terminal ExprOptional;
-non terminal Expr;
-non terminal MinusOptional;
-non terminal TermAddopRepeat;
-non terminal Term;
-non terminal FactorMulopRepeat;
-non terminal Factor;
-non terminal Addop;
-non terminal Mulop;
-non terminal Designator;
+non terminal ConstDecl, ConstValue, ConstDeclRepeat;
+non terminal VarDecl, VarDeclRepeat, ArrayBracketsDeclOptional;
+non terminal ClassDecl, ClassExtendsOptional, ClassMethodDecl;
+non terminal MethodDecl, MethodDeclRepeat, MethodType, FormParsOptional, FormPars, FormParRepeat, FormParDecl;
+
+non terminal StatementRepeat, Statement;
+non terminal DesignatorStatement, Designator, SubDesignatorRepeat, ArrayBracketsOptional;
+
+non terminal Assignop, Mulop, Addop;
+non terminal MinusOptional, ExprOptional, Expr;
+non terminal TermAddopRepeat, Term, Factor, FactorMulopRepeat, ActPars, ActParsOptional;
+non terminal Condition, CondTermOrRepeat, CondTerm, CondFactorAndRepeat, CondFact, Relop, RelopExprOptional;
+
+non terminal ElseStatementOptional, PrintWidthExists, CaseRepeat;
+
 
 precedence left ELSE;
 
@@ -116,34 +95,44 @@ precedence left ELSE;
 //zagrade na desnoj strani su ime klase u ast
 
 
+Program ::= (Program) PROGRAM IDENT:programName ConstVarClassDeclRepeat LBRACE MethodDeclRepeat RBRACE;
 
-Program ::= (Program) PROGRAM IDENT:programName ConstVarDeclRepeat LBRACE MethodDeclRepeat RBRACE;
+ConstVarClassDeclRepeat ::= (ConstVarClassDeclRepeatExists) ConstVarClassDeclRepeat ConstVarClassDecl
+                        |
+                        (ConstVarClassDeclRepeatEmpty) /* empty */
+                        ;
 
-ConstVarDeclRepeat ::= (ConstVarDeclRepeatExists) ConstVarDeclRepeat ConstVarDecl
-                     |
-                     (ConstVarDeclRepeatEmpty) /* empty */
-                     ;
+ConstVarDecl ::= ConstDecl | VarDecl | ClassDecl;
 
-ConstVarDecl ::= ConstDecl | VarDecl;
+Type ::= IDENT:typeName;
+
 ConstDecl ::= CONST Type IDENT EQUAL ConstValue ConstDeclRepeat SEMICOLN;
 ConstValue ::= NUM | CHAR | BOOLEAN;
 ConstDeclRepeat ::= ConstDeclRepeat COMMA IDENT EQUAL ConstValue | /* empty */;
 
-Type ::= IDENT;
 
-VarDecl ::= Type IDENT OptArray VarDeclRepeat SEMICOLN;
-VarDeclRepeat ::= VarDeclRepeat COMMA IDENT OptArray | /* empty */;
+VarDecl ::= Type IDENT ArrayBracketsDeclOptional VarDeclIdentRepeat SEMICOLN;
+VarDeclIdentRepeat ::= VarDeclIdentRepeat COMMA IDENT ArrayBracketsDeclOptional | /* empty */;
+ArrayBracketsDeclOptional ::= (ArrayBracketsDeclExists) LBRACKET RBRACKET | /* empty */ (ArrayBracketsDeclEmpty);
+VarDeclRepeat ::= VarDeclRepeat VarDecl | /* empty */;
 
-MethodDeclRepeat ::= MethodDeclRepeat MethodDecl | /* empty */;
 
-MethodType ::= Type | VOID;
+ClassDecl ::= CLASS IDENT ClassExtendsOptional LBRACE VarDeclRepeat ClassMethodDecl RBRACE;
+ClassExtendsOptional ::= (ClassExtendsExists) EXTENDS | /* empty */ (ClassExtendsEmpty);
+ClassMethodDecl ::= LBRACE MethodDeclRepeat RBRACE;
+
+
 MethodDecl ::= MethodType IDENT LPAREN FormParsOptional RPAREN VarDeclRepeat LBRACE StatementRepeat RBRACE;
+MethodDeclRepeat ::= MethodDeclRepeat MethodDecl | /* empty */;
+MethodType ::= (MethodTypeReturn) Type | (MethodTypeReturnVoid) VOID;
 
+
+//methodDeclPars != varDecl
 FormParsOptional ::= FormPars | /* empty */;
-FormParDecl ::= Type IDENT ArrayDeclOptional;
-FormPars ::= FormParDecl FormParsRepeat;
-ArrayDeclOptional ::= LBRACKET RBRACKET | /* empty */;
-FormParsRepeat ::= FormParsRepeat COMMA FormParDecl | /* empty */;
+FormPars ::= FormParDecl FormParRepeat;
+FormParDecl ::= Type IDENT ArrayBracketsDeclOptional;
+FormParRepeat ::= FormParRepeat COMMA FormParDecl | /* empty */;
+
 
 StatementRepeat ::= StatementRepeat Statement | /* empty */;
 Statement ::= DesignatorStatement SEMICOLN
@@ -167,25 +156,58 @@ Statement ::= DesignatorStatement SEMICOLN
             LBRACE StatementRepeat RBRACE
             ;
 
-ElseStatementOptional ::= ELSE Statement;
-
-PrintWidthOptional ::= COMMA NUM | /* empty */;
-
-CaseRepeat ::= CaseRepeat CASE NUM DDOTS StatementRepeat | /* empty */;
 
 DesignatorStatement ::= Designator Assignop Expr
-                      |
-                      Designator LPAREN ActParsOptional RPAREN
-                      |
-                      Designator INC
-                      |
-                      Designator DECR
-                      ;
+                        |
+                        Designator LPAREN ActParsOptional RPAREN
+                        |
+                        Designator INC
+                        |
+                        Designator DECR
+                        ;
 
+
+Designator ::= IDENT ArrayBracketsOptional SubDesignatorRepeat;
+SubDesignatorRepeat ::= SubDesignatorRepeat DOT IDENT ArrayBracketsDeclOptional | /* empty */;
+//ArrayBracketsOptional != ArrayBracketsDeclOptional jer mora da ima expr unutra
+ArrayBracketsOptional ::= (ArrayBracketsOptional) LBRACKET Expr RBRACKET | /* empty */ (ArrayBracketsOptional);
+
+/*operators*/
 Assignop ::= EQUAL;
-ActParsOptional ::= ActPars | /* empty */;
-ActPars ::= Expr ActParsExprRepeat;
-ActParsExprRepeat ::= ActParsExprRepeat COMMA Expr;
+Addop ::= ADD | SUB;
+Mulop ::= MUL | DIV | MOD;
+
+
+MinusOptional ::= (MinusExists) SUB | (MinusEmpty) /* empty */;
+
+
+//TODO: TERNARNI 
+ExprOptional ::= (ExprExists) Expr | (ExprEmpty) /* empty */;
+Expr::= MinusOptional Term TermAddopRepeat;
+
+TermAddopRepeat ::= TermAddopRepeat Addop Term | /* empty */;
+Term ::= Factor FactorMulopRepeat;
+FactorMulopRepeat ::= FactorMulopRepeat Mulop Factor| /* empty */;
+
+Factor ::= (Var) Designator:v
+            |
+            (FuncCall) Designator:func LPAREN ActParsOptional RPAREN
+            |
+            NUM
+            |
+            CHAR
+            |
+            BOOLEAN
+            |
+            NEW Type LBRACKET Expr RBRACKET
+            |
+            LPAREN Expr RPAREN
+            ;
+
+
+
+ActParsOptional ::= (ActParsOptionalExists) ActPars | (ActParsOptionalEmpty) /* empty */;
+ActPars ::= ActPars COMMA Expr | Expr;
 
 
 Condition ::= CondTerm CondTermOrRepeat;
@@ -194,42 +216,15 @@ CondTermOrRepeat ::= CondTermOrRepeat OR CondTerm | /* empty */;
 CondTerm ::= CondFact CondFactorAndRepeat;
 CondFactorAndRepeat ::= CondFactorAndRepeat AND CondFact | /* empty */;
 CondFact ::= Expr RelopExprOptional;
-RelopExprOptional ::= Relop Expr | /* empty */;
+
 Relop ::= EQUALS | NEQUALS | GRT | GRTEQUAL | LESS | LESSEQUAL;
-
-ExprOptional ::= Expr | /* empty */;
-
-Expr::= MinusOptional Term TermAddopRepeat;
-
-MinusOptional ::= SUB | /* empty */;
-
-TermAddopRepeat ::= TermAddopRepeat Addop Term | /* empty */;
-
-Term ::= Factor FactorMulopRepeat;
-
-FactorMulopRepeat ::= FactorMulopRepeat Mulop Factor| /* empty */;
-
-Factor ::= Designator
-         |
-         Designator LPAREN ActParsOptional RPAREN
-         |
-         NUM
-         |
-         CHAR
-         |
-         BOOLEAN
-         |
-         NEW Type LPAREN Expr RPAREN
-         |
-         LPAREN Expr RPAREN
-         ;
+RelopExprOptional ::= (RelopExprExists) Relop Expr |(RelopExprEmpty) /* empty */;
 
 
-/*operators*/
-
-Addop ::= ADD | SUB;
-Mulop ::= MUL | DIV | MOD;
+ElseStatementOptional ::= (ElseStatementExists) ELSE Statement | (ElseStatementEmpty) /* empty */;
+CaseRepeat ::= CaseRepeat CASE NUM DDOTS StatementRepeat | /* empty */;
+PrintWidthOptional ::= (PrintWidthExists) COMMA NUM | (PrintWidthEmpty) /* empty */;
 
 
 
-Designator ::= IDENT | IDENT LBRACKET Expr RBRACKET;
+
