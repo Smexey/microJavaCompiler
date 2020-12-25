@@ -172,7 +172,7 @@ DesignatorStatement ::= Designator Assignop Expr
 
 
 Designator ::= IDENT ArrayBracketsOptional SubDesignatorRepeat;
-SubDesignatorRepeat ::= SubDesignatorRepeat DOT IDENT ArrayBracketsDeclOptional | /* empty */;
+SubDesignatorRepeat ::= SubDesignatorRepeat DOT IDENT ArrayBracketsOptional | /* empty */;
 ArrayBracketsOptional ::= (ArrayBracketsExists) LBRACKET Expr RBRACKET |(ArrayBracketsEmpty) /* empty */ ;
 
 /*operators*/
