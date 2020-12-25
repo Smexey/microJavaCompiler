@@ -74,9 +74,12 @@ import java_cup.runtime.Symbol;
 "if"     	{ return newSymbol(sym.IF, yytext());}
 "new"     	{ return newSymbol(sym.NEW, yytext());}
 "read"     	{ return newSymbol(sym.READ, yytext());}
-
+"switch"    { return newSymbol(sym.SWITCH, yytext());}
+"case"     	{ return newSymbol(sym.CASE, yytext());}
 "class" 	{ return newSymbol(sym.CLASS, yytext()); }
-
+"extends" 	{ return newSymbol(sym.EXTENDS, yytext()); }
+"do" 		{ return newSymbol(sym.DO, yytext()); }
+"while" 	{ return newSymbol(sym.WHILE, yytext()); }
 
 <YYINITIAL> "//" { yybegin(COMMENT); }
 <COMMENT> "\r\n" { yybegin(YYINITIAL); }

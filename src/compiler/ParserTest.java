@@ -22,7 +22,7 @@ public class ParserTest {
     public static void main(String[] args) throws Exception {
         Logger log = Logger.getLogger(ParserTest.class);
 
-        File sourceCode = new File("testFiles/program.mj");
+        File sourceCode = new File("testFiles/test301.mj");
         if (!sourceCode.exists()) {
             log.error("Source file [" + sourceCode.getAbsolutePath() + "] not found!");
             return;
