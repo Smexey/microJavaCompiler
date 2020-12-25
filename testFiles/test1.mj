@@ -1,9 +1,8 @@
 
 program test301
 
-	const int nula = 0;
-	const int jedan = 1;
-	const int pet = 5;
+	int a,b;
+	int c;
 
 	int niz[];
 	char nizch[];
@@ -14,10 +13,15 @@ program test301
 		bool bt;
 	{
 
-
-        bodovi = 0;
+        bodovi = 'a';
 		bodovi++;
 
     }
+
+	void main2()	
+		int b2,ac;
+	{
+		ac++;
+	}
 
 }

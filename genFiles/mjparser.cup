@@ -122,7 +122,7 @@ VarDeclRepeat ::= VarDeclRepeat VarDecl | /* empty */;
 
 
 ClassDecl ::= CLASS IDENT ClassExtendsOptional LBRACE VarDeclRepeat ClassMethodDecl RBRACE;
-ClassExtendsOptional ::= (ClassExtendsExists) EXTENDS | /* empty */ (ClassExtendsEmpty);
+ClassExtendsOptional ::= (ClassExtendsExists) EXTENDS IDENT | /* empty */ (ClassExtendsEmpty);
 ClassMethodDecl ::= LBRACE MethodDeclRepeat RBRACE;
 
 
@@ -203,7 +203,7 @@ Factor ::= Designator
             |
             BOOLEAN
             |
-            NEW Type:typeName LBRACKET Expr:ex RBRACKET
+            NEW Type:typeName ArrayBracketsOptional
             |
             LPAREN Expr RPAREN
             ;

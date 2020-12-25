@@ -59,6 +59,7 @@ import java_cup.runtime.Symbol;
 "]" 		{ return newSymbol(sym.RBRACKET, yytext()); }
 "=" 		{ return newSymbol(sym.EQUAL, yytext()); }
 ";" 		{ return newSymbol(sym.SEMICOLN, yytext()); }
+":" 		{ return newSymbol(sym.DDOTS, yytext()); }
 "," 		{ return newSymbol(sym.COMMA, yytext()); }
 "." 		{ return newSymbol(sym.DOT, yytext()); }
 "(" 		{ return newSymbol(sym.LPAREN, yytext()); }
@@ -88,7 +89,7 @@ import java_cup.runtime.Symbol;
 
 [0-9]+  { return newSymbol(sym.NUM, new Integer (yytext())); }
 (true)|(false) {return newSymbol (sym.BOOLEAN, yytext()); }
-(\'.\') {return newSymbol (sym.CHAR, yytext()); }
+(\'.\') {return newSymbol (sym.CHAR, yytext().charAt(1)); }
 ([a-z]|[A-Z])[a-z|A-Z|0-9|_]* 	{return newSymbol (sym.IDENT, yytext()); }
 
 

@@ -7,6 +7,7 @@ import java.io.FileReader;
 import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
 
+import ast.Program;
 import ast.SyntaxNode;
 import java_cup.runtime.Symbol;
 
@@ -22,7 +23,7 @@ public class ParserTest {
     public static void main(String[] args) throws Exception {
         Logger log = Logger.getLogger(ParserTest.class);
 
-        File sourceCode = new File("testFiles/test301.mj");
+        File sourceCode = new File("testFiles/program.mj");
         if (!sourceCode.exists()) {
             log.error("Source file [" + sourceCode.getAbsolutePath() + "] not found!");
             return;
@@ -34,10 +35,10 @@ public class ParserTest {
             Yylex lexer = new Yylex(br);
             Parser p = new Parser(lexer);
             Symbol s = p.parse(); // pocetak parsiranja
-            SyntaxNode prog = (SyntaxNode) (s.value);
+            Program prog = (Program) (s.value);
 
             log.info("===========================");
-            log.info(prog.toString());
+            log.info(prog.toString(""));
             log.info("===========================");
 
         }
