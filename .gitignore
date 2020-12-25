@@ -1,5 +1,5 @@
 /logs
-
+/genFiles/mjlexer_astbuil.cup
 /src/Yylex.java
 /src/ast
 /src/compiler/Parser.java

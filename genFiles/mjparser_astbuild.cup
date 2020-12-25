@@ -1,0 +1,268 @@
+package compiler;
+
+import java_cup.runtime.*;
+import org.apache.log4j.*;
+import ast.*;
+
+
+
+parser code {:
+	boolean errorDetected = false;
+	Logger log = Logger.getLogger(getClass());
+
+    // slede redefinisani metodi za prijavu gresaka radi izmene teksta poruke
+    public void report_fatal_error(String message, Object info) throws java.lang.Exception {
+      done_parsing();
+      report_error(message, info);
+    }
+
+    public void syntax_error(Symbol cur_token) {
+        report_error("\nSintaksna greska", cur_token);
+    }
+
+    public void unrecovered_syntax_error(Symbol cur_token) throws java.lang.Exception {
+        report_fatal_error("Fatalna greska, parsiranje se ne moze nastaviti", cur_token);
+    }
+
+    public void report_error(String message, Object info) {
+    	errorDetected = true;
+    	StringBuilder msg = new StringBuilder(message);
+    	if (info instanceof Symbol)
+            msg.append (" na liniji ").append(((Symbol)info).left);
+        log.error(msg.toString());
+    }
+
+    public void report_info(String message, Object info) {
+    	StringBuilder msg = new StringBuilder(message);
+    	if (info instanceof Symbol)
+            msg.append (" na liniji ").append(((Symbol)info).left);
+        log.info(msg.toString());
+    }
+
+:}
+// preko yylex  
+scan with {:
+	Symbol s = this.getScanner().next_token();
+	if (s != null && s.value != null)
+		log.info(s.toString() + " " + s.value.toString());
+	return s;
+:}
+
+terminal PROGRAM, RETURN, VOID, LBRACKET, RBRACKET, CLASS, EXTENDS;
+
+terminal SEMICOLN,EQUAL, COMMA, DOT, LPAREN, RPAREN, LBRACE, RBRACE, CONST, NEW;
+terminal PRINT,READ;
+
+terminal ADD, SUB, MUL, DIV, MOD, INC, DECR;
+terminal EQUALS, NEQUALS, GRT, GRTEQUAL, LESS, LESSEQUAL, AND, OR;
+
+terminal IF, ELSE, SWITCH, CASE;
+terminal DO, WHILE, BREAK, CONTINUE;
+
+terminal DDOTS, QMARK;
+
+
+//basetypes
+//popraviti boolean?
+terminal String IDENT;
+terminal Integer NUM;
+terminal Object BOOLEAN;
+terminal Character CHAR;
+
+
+non terminal Program Program;
+nonterminal ConstVarClassDeclRepeat ConstVarClassDeclRepeat;
+nonterminal ConstVarClassDecl ConstVarClassDecl;
+
+non terminal Type Type;
+non terminal ConstDecl ConstDecl;
+nonterminal ConstValue ConstValue;
+nonterminal ConstDeclRepeat ConstDeclRepeat;
+non terminal VarDecl VarDecl;
+nonterminal VarDeclIdentRepeat VarDeclIdentRepeat;
+nonterminal ArrayBracketsDeclOptional ArrayBracketsDeclOptional;
+nonterminal VarDeclRepeat VarDeclRepeat;
+non terminal ClassDecl ClassDecl;
+nonterminal ClassExtendsOptional ClassExtendsOptional;
+nonterminal ClassMethodDecl ClassMethodDecl;
+non terminal MethodDecl MethodDecl;
+nonterminal MethodDeclRepeat MethodDeclRepeat;
+nonterminal MethodType MethodType;
+nonterminal FormParsOptional FormParsOptional;
+nonterminal FormPars FormPars;
+nonterminal FormParDecl FormParDecl;
+nonterminal FormParRepeat FormParRepeat;
+
+
+non terminal FunctCall FunctCall;
+non terminal StatementRepeat StatementRepeat;
+nonterminal Statement Statement;
+non terminal DesignatorStatement DesignatorStatement;
+nonterminal Designator Designator;
+nonterminal SubDesignatorRepeat SubDesignatorRepeat;
+nonterminal ArrayBracketsOptional ArrayBracketsOptional;
+
+non terminal Assignop Assignop;
+nonterminal Mulop Mulop;
+nonterminal Addop Addop;
+non terminal MinusOptional MinusOptional;
+nonterminal ExprOptional ExprOptional;
+nonterminal Expr Expr;
+non terminal TermAddopRepeat TermAddopRepeat;
+nonterminal Term Term;
+nonterminal Factor Factor;
+nonterminal FactorMulopRepeat FactorMulopRepeat;
+nonterminal ActPars ActPars;
+nonterminal ActParsOptional ActParsOptional;
+
+non terminal Condition Condition;
+nonterminal CondTermOrRepeat CondTermOrRepeat;
+nonterminal CondTerm CondTerm;
+nonterminal CondFactorAndRepeat CondFactorAndRepeat;
+nonterminal CondFact CondFact;
+nonterminal Relop Relop;
+nonterminal RelopExprOptional RelopExprOptional;
+
+non terminal ElseStatementOptional ElseStatementOptional;
+nonterminal PrintWidthOptional PrintWidthOptional;
+nonterminal CaseRepeat CaseRepeat;
+
+
+
+precedence left ELSE;
+
+//terminali allcaps
+//zagrade na desnoj strani su ime klase u ast
+
+
+Program ::= (Program) PROGRAM IDENT:programName ConstVarClassDeclRepeat:C1 LBRACE MethodDeclRepeat:M2 RBRACE {: RESULT=new Program(programName, C1, M2); RESULT.setLine(programNameleft); :};
+
+ConstVarClassDeclRepeat ::= (ConstVarClassDeclRepeatExists) ConstVarClassDeclRepeat:C1 ConstVarClassDecl:C2 {: RESULT=new ConstVarClassDeclRepeatExists(C1, C2); RESULT.setLine(C1left); :}
+                        |
+                        (ConstVarClassDeclRepeatEmpty) {: RESULT=new ConstVarClassDeclRepeatEmpty(); :} /* empty */
+                        ;
+
+ConstVarClassDecl ::= ConstDecl:C1 {: RESULT=new ConstVarClassDeclDerived1(C1); RESULT.setLine(C1left); :} | VarDecl:V1 {: RESULT=new ConstVarClassDeclDerived2(V1); RESULT.setLine(V1left); :} | ClassDecl:C1 {: RESULT=new ConstVarClassDeclDerived3(C1); RESULT.setLine(C1left); :};
+
+Type ::= IDENT:typeName {: RESULT=new TypeDerived1(typeName); RESULT.setLine(typeNameleft); :};
+
+ConstDecl ::= CONST Type:T1 IDENT:I2 EQUAL ConstValue:C3 ConstDeclRepeat:C4 SEMICOLN {: RESULT=new ConstDeclDerived1(T1, I2, C3, C4); RESULT.setLine(T1left); :};
+ConstValue ::= NUM:N1 {: RESULT=new ConstValueDerived1(N1); RESULT.setLine(N1left); :} | CHAR:C1 {: RESULT=new ConstValueDerived2(C1); RESULT.setLine(C1left); :} | BOOLEAN {: RESULT=new ConstValueDerived3(); :};
+ConstDeclRepeat ::= ConstDeclRepeat:C1 COMMA IDENT:I2 EQUAL ConstValue:C3 {: RESULT=new ConstDeclRepeatDerived1(C1, I2, C3); RESULT.setLine(C1left); :} | {: RESULT=new ConstDeclRepeatDerived2(); :} /* empty */;
+
+
+VarDecl ::= Type:T1 IDENT:I2 ArrayBracketsDeclOptional:A3 VarDeclIdentRepeat:V4 SEMICOLN {: RESULT=new VarDeclDerived1(T1, I2, A3, V4); RESULT.setLine(T1left); :};
+VarDeclIdentRepeat ::= VarDeclIdentRepeat:V1 COMMA IDENT:I2 ArrayBracketsDeclOptional:A3 {: RESULT=new VarDeclIdentRepeatDerived1(V1, I2, A3); RESULT.setLine(V1left); :} | {: RESULT=new VarDeclIdentRepeatDerived2(); :} /* empty */;
+ArrayBracketsDeclOptional ::= (ArrayBracketsDeclExists) LBRACKET RBRACKET {: RESULT=new ArrayBracketsDeclExists(); :} | /* empty */ (ArrayBracketsDeclEmpty) {: RESULT=new ArrayBracketsDeclEmpty(); :};
+VarDeclRepeat ::= VarDeclRepeat:V1 VarDecl:V2 {: RESULT=new VarDeclRepeatDerived1(V1, V2); RESULT.setLine(V1left); :} | {: RESULT=new VarDeclRepeatDerived2(); :} /* empty */;
+
+
+ClassDecl ::= CLASS IDENT:I1 ClassExtendsOptional:C2 LBRACE VarDeclRepeat:V3 ClassMethodDecl:C4 RBRACE {: RESULT=new ClassDeclDerived1(I1, C2, V3, C4); RESULT.setLine(I1left); :};
+ClassExtendsOptional ::= (ClassExtendsExists) EXTENDS {: RESULT=new ClassExtendsExists(); :} | /* empty */ (ClassExtendsEmpty) {: RESULT=new ClassExtendsEmpty(); :};
+ClassMethodDecl ::= LBRACE MethodDeclRepeat:M1 RBRACE {: RESULT=new ClassMethodDeclDerived1(M1); RESULT.setLine(M1left); :};
+
+
+MethodDecl ::= MethodType:M1 IDENT:I2 LPAREN FormParsOptional:F3 RPAREN VarDeclRepeat:V4 LBRACE StatementRepeat:S5 RBRACE {: RESULT=new MethodDeclDerived1(M1, I2, F3, V4, S5); RESULT.setLine(M1left); :};
+MethodDeclRepeat ::= MethodDeclRepeat:M1 MethodDecl:M2 {: RESULT=new MethodDeclRepeatDerived1(M1, M2); RESULT.setLine(M1left); :} | {: RESULT=new MethodDeclRepeatDerived2(); :} /* empty */;
+MethodType ::= (MethodTypeReturn) Type:T1 {: RESULT=new MethodTypeReturn(T1); RESULT.setLine(T1left); :} | (MethodTypeReturnVoid) VOID {: RESULT=new MethodTypeReturnVoid(); :};
+
+
+//methodDeclPars != varDecl
+FormParsOptional ::= FormPars:F1 {: RESULT=new FormParsOptionalDerived1(F1); RESULT.setLine(F1left); :} | {: RESULT=new FormParsOptionalDerived2(); :} /* empty */;
+FormPars ::= FormParDecl:F1 FormParRepeat:F2 {: RESULT=new FormParsDerived1(F1, F2); RESULT.setLine(F1left); :};
+FormParDecl ::= Type:T1 IDENT:I2 ArrayBracketsDeclOptional:A3 {: RESULT=new FormParDeclDerived1(T1, I2, A3); RESULT.setLine(T1left); :};
+FormParRepeat ::= FormParRepeat:F1 COMMA FormParDecl:F2 {: RESULT=new FormParRepeatDerived1(F1, F2); RESULT.setLine(F1left); :} | {: RESULT=new FormParRepeatDerived2(); :} /* empty */;
+
+
+StatementRepeat ::= StatementRepeat:S1 Statement:S2 {: RESULT=new StatementRepeatDerived1(S1, S2); RESULT.setLine(S1left); :} | {: RESULT=new StatementRepeatDerived2(); :} /* empty */;
+Statement ::= DesignatorStatement:D1 SEMICOLN {: RESULT=new StatementDerived1(D1); RESULT.setLine(D1left); :}
+            |
+            IF LPAREN Condition:C1 RPAREN Statement:S2 ElseStatementOptional:E3 {: RESULT=new StatementDerived2(C1, S2, E3); RESULT.setLine(C1left); :}
+            |
+            DO Statement:S1 WHILE LPAREN Condition:C2 RPAREN SEMICOLN {: RESULT=new StatementDerived3(S1, C2); RESULT.setLine(S1left); :}
+            |
+            SWITCH LPAREN Expr:E1 RPAREN LBRACE CaseRepeat:C2 RBRACE {: RESULT=new StatementDerived4(E1, C2); RESULT.setLine(E1left); :}
+            |
+            BREAK SEMICOLN {: RESULT=new StatementDerived5(); :}
+            |
+            CONTINUE SEMICOLN {: RESULT=new StatementDerived6(); :}
+            |
+            RETURN ExprOptional:E1 SEMICOLN {: RESULT=new StatementDerived7(E1); RESULT.setLine(E1left); :}
+            |
+            READ LPAREN Designator:D1 RPAREN SEMICOLN {: RESULT=new StatementDerived8(D1); RESULT.setLine(D1left); :}
+            |
+            PRINT LPAREN Expr:E1 PrintWidthOptional:P2 RPAREN SEMICOLN {: RESULT=new StatementDerived9(E1, P2); RESULT.setLine(E1left); :}
+            |
+            LBRACE StatementRepeat:S1 RBRACE {: RESULT=new StatementDerived10(S1); RESULT.setLine(S1left); :}
+            ;
+
+
+DesignatorStatement ::= Designator:D1 Assignop:A2 Expr:E3 {: RESULT=new DesignatorStatementDerived1(D1, A2, E3); RESULT.setLine(D1left); :}
+                        |
+                        FunctCall:F1 {: RESULT=new DesignatorStatementDerived2(F1); RESULT.setLine(F1left); :}
+                        |
+                        Designator:D1 INC {: RESULT=new DesignatorStatementDerived3(D1); RESULT.setLine(D1left); :}
+                        |
+                        Designator:D1 DECR {: RESULT=new DesignatorStatementDerived4(D1); RESULT.setLine(D1left); :}
+                        ;
+
+
+Designator ::= IDENT:I1 ArrayBracketsOptional:A2 SubDesignatorRepeat:S3 {: RESULT=new DesignatorDerived1(I1, A2, S3); RESULT.setLine(I1left); :};
+SubDesignatorRepeat ::= SubDesignatorRepeat:S1 DOT IDENT:I2 ArrayBracketsOptional:A3 {: RESULT=new SubDesignatorRepeatDerived1(S1, I2, A3); RESULT.setLine(S1left); :} | {: RESULT=new SubDesignatorRepeatDerived2(); :} /* empty */;
+ArrayBracketsOptional ::= (ArrayBracketsExists) LBRACKET Expr:E1 RBRACKET {: RESULT=new ArrayBracketsExists(E1); RESULT.setLine(E1left); :} |(ArrayBracketsEmpty) {: RESULT=new ArrayBracketsEmpty(); :} /* empty */ ;
+
+/*operators*/
+Assignop ::= EQUAL {: RESULT=new AssignopDerived1(); :};
+Mulop ::= MUL {: RESULT=new MulopDerived1(); :} | DIV {: RESULT=new MulopDerived2(); :} | MOD {: RESULT=new MulopDerived3(); :};
+Addop ::= ADD {: RESULT=new AddopDerived1(); :} | SUB {: RESULT=new AddopDerived2(); :};
+
+
+
+MinusOptional ::= (MinusExists) SUB {: RESULT=new MinusExists(); :} | (MinusEmpty) {: RESULT=new MinusEmpty(); :} /* empty */;
+
+
+//TODO: TERNARNI 
+ExprOptional ::= (ExprExists) Expr:E1 {: RESULT=new ExprExists(E1); RESULT.setLine(E1left); :} | (ExprEmpty) {: RESULT=new ExprEmpty(); :} /* empty */;
+Expr::= MinusOptional:M1 Term:T2 TermAddopRepeat:T3 {: RESULT=new ExprDerived1(M1, T2, T3); RESULT.setLine(M1left); :};
+
+TermAddopRepeat ::= TermAddopRepeat:T1 Addop:A2 Term:T3 {: RESULT=new TermAddopRepeatDerived1(T1, A2, T3); RESULT.setLine(T1left); :} | {: RESULT=new TermAddopRepeatDerived2(); :} /* empty */;
+Term ::= Factor:F1 FactorMulopRepeat:F2 {: RESULT=new TermDerived1(F1, F2); RESULT.setLine(F1left); :};
+FactorMulopRepeat ::= FactorMulopRepeat:F1 Mulop:M2 Factor:F3 {: RESULT=new FactorMulopRepeatDerived1(F1, M2, F3); RESULT.setLine(F1left); :}| {: RESULT=new FactorMulopRepeatDerived2(); :} /* empty */;
+
+Factor ::= Designator:D1 {: RESULT=new FactorDerived1(D1); RESULT.setLine(D1left); :}
+            |
+            FunctCall:F1 {: RESULT=new FactorDerived2(F1); RESULT.setLine(F1left); :}
+            |
+            NUM:N1 {: RESULT=new FactorDerived3(N1); RESULT.setLine(N1left); :}
+            |
+            CHAR:C1 {: RESULT=new FactorDerived4(C1); RESULT.setLine(C1left); :}
+            |
+            BOOLEAN {: RESULT=new FactorDerived5(); :}
+            |
+            NEW Type:typeName LBRACKET Expr:ex RBRACKET {: RESULT=new FactorDerived6(typeName, ex); RESULT.setLine(typeNameleft); :}
+            |
+            LPAREN Expr:E1 RPAREN {: RESULT=new FactorDerived7(E1); RESULT.setLine(E1left); :}
+            ;
+
+
+FunctCall ::= Designator:func LPAREN ActParsOptional:param RPAREN {: RESULT=new FunctCallDerived1(func, param); RESULT.setLine(funcleft); :};
+
+ActParsOptional ::= (ActParsExists) ActPars:A1 {: RESULT=new ActParsExists(A1); RESULT.setLine(A1left); :} | (ActParsEmpty) {: RESULT=new ActParsEmpty(); :} /* empty */;
+ActPars ::= ActPars:A1 COMMA Expr:E2 {: RESULT=new ActParsDerived1(A1, E2); RESULT.setLine(A1left); :} | Expr:E1 {: RESULT=new ActParsDerived2(E1); RESULT.setLine(E1left); :};
+
+
+Condition ::= CondTerm:C1 CondTermOrRepeat:C2 {: RESULT=new ConditionDerived1(C1, C2); RESULT.setLine(C1left); :};
+CondTermOrRepeat ::= CondTermOrRepeat:C1 OR CondTerm:C2 {: RESULT=new CondTermOrRepeatDerived1(C1, C2); RESULT.setLine(C1left); :} | {: RESULT=new CondTermOrRepeatDerived2(); :} /* empty */;
+
+CondTerm ::= CondFact:C1 CondFactorAndRepeat:C2 {: RESULT=new CondTermDerived1(C1, C2); RESULT.setLine(C1left); :};
+CondFactorAndRepeat ::= CondFactorAndRepeat:C1 AND CondFact:C2 {: RESULT=new CondFactorAndRepeatDerived1(C1, C2); RESULT.setLine(C1left); :} | {: RESULT=new CondFactorAndRepeatDerived2(); :} /* empty */;
+CondFact ::= Expr:E1 RelopExprOptional:R2 {: RESULT=new CondFactDerived1(E1, R2); RESULT.setLine(E1left); :};
+
+Relop ::= EQUALS {: RESULT=new RelopDerived1(); :} | NEQUALS {: RESULT=new RelopDerived2(); :} | GRT {: RESULT=new RelopDerived3(); :} | GRTEQUAL {: RESULT=new RelopDerived4(); :} | LESS {: RESULT=new RelopDerived5(); :} | LESSEQUAL {: RESULT=new RelopDerived6(); :};
+RelopExprOptional ::= (RelopExprExists) Relop:R1 Expr:E2 {: RESULT=new RelopExprExists(R1, E2); RESULT.setLine(R1left); :} |(RelopExprEmpty) {: RESULT=new RelopExprEmpty(); :} /* empty */;
+
+
+ElseStatementOptional ::= (ElseStatementExists) ELSE Statement:S1 {: RESULT=new ElseStatementExists(S1); RESULT.setLine(S1left); :} | (ElseStatementEmpty) {: RESULT=new ElseStatementEmpty(); :} /* empty */;
+CaseRepeat ::= CaseRepeat:C1 CASE NUM:N2 DDOTS StatementRepeat:S3 {: RESULT=new CaseRepeatDerived1(C1, N2, S3); RESULT.setLine(C1left); :} | {: RESULT=new CaseRepeatDerived2(); :} /* empty */;
+PrintWidthOptional ::= (PrintWidthExists) COMMA NUM:N1 {: RESULT=new PrintWidthExists(N1); RESULT.setLine(N1left); :} | (PrintWidthEmpty) {: RESULT=new PrintWidthEmpty(); :} /* empty */;
+
