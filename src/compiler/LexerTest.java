@@ -13,7 +13,7 @@ import org.apache.log4j.xml.DOMConfigurator;
 
 import util.Log4JUtils;
 
-public class MJTest {
+public class LexerTest {
 
 	static {
 		DOMConfigurator.configure(Log4JUtils.instance().findLoggerConfigFile());
@@ -21,7 +21,7 @@ public class MJTest {
 	}
 
 	public static void main(String[] args) throws IOException {
-		Logger log = Logger.getLogger(MJTest.class);
+		Logger log = Logger.getLogger(LexerTest.class);
 		Reader br = null;
 		try {
 			File sourceCode = new File("testFiles/program.mj");

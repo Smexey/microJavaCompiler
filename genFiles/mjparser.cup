@@ -85,7 +85,7 @@ non terminal DesignatorStatement, Designator, SubDesignatorRepeat, ArrayBrackets
 
 non terminal Assignop, Mulop, Addop;
 non terminal MinusOptional, ExprOptional, Expr;
-non terminal TermAddopRepeat, Term, Factor, FactorMulopRepeat, ActPars, ActParsOptional, ActParsExprRepeat;
+non terminal TermAddopRepeat, Term, Factor, FactorMulopRepeat, ActPars, ActParsOptional;
 
 non terminal Condition, CondTermOrRepeat, CondTerm, CondFactorAndRepeat, CondFact, Relop, RelopExprOptional;
 
@@ -173,8 +173,7 @@ DesignatorStatement ::= Designator Assignop Expr
 
 Designator ::= IDENT ArrayBracketsOptional SubDesignatorRepeat;
 SubDesignatorRepeat ::= SubDesignatorRepeat DOT IDENT ArrayBracketsDeclOptional | /* empty */;
-//ArrayBracketsOptional != ArrayBracketsDeclOptional jer mora da ima expr unutra
-ArrayBracketsOptional ::= (ArrayBracketsOptional) LBRACKET Expr RBRACKET | /* empty */ (ArrayBracketsOptional);
+ArrayBracketsOptional ::= (ArrayBracketsExists) LBRACKET Expr RBRACKET |(ArrayBracketsEmpty) /* empty */ ;
 
 /*operators*/
 Assignop ::= EQUAL;
@@ -194,7 +193,9 @@ TermAddopRepeat ::= TermAddopRepeat Addop Term | /* empty */;
 Term ::= Factor FactorMulopRepeat;
 FactorMulopRepeat ::= FactorMulopRepeat Mulop Factor| /* empty */;
 
-Factor ::= (Var) Designator:v
+Factor ::= Designator
+            |
+            FunctCall
             |
             NUM
             |
@@ -208,11 +209,9 @@ Factor ::= (Var) Designator:v
             ;
 
 
-
-
 FunctCall ::= Designator:func LPAREN ActParsOptional:param RPAREN;
 
-ActParsOptional ::= ActPars | /* empty */;
+ActParsOptional ::= (ActParsExists) ActPars | (ActParsEmpty) /* empty */;
 ActPars ::= ActPars COMMA Expr | Expr;
 
 
