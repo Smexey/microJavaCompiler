@@ -68,7 +68,8 @@
                 "-rf",
                 "${workspaceFolder}/src/compiler/Parser.java",
                 "${workspaceFolder}/src/compiler/sym.java",
-                "${workspaceFolder}/src/ast/"
+                "${workspaceFolder}/src/ast/",
+                "${workspaceFolder}/genFiles/mjparser_astbuild.cup",
             ],
         },
         {

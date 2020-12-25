@@ -70,23 +70,27 @@ terminal Object BOOLEAN;
 terminal Character CHAR;
 
 
-non terminal Program, ConstVarClassDeclRepeat, ConstVarClassDecl, ConstDecl, ClassDecl;
+non terminal Program, ConstVarClassDeclRepeat, ConstVarClassDecl;
 
 non terminal Type;
 non terminal ConstDecl, ConstValue, ConstDeclRepeat;
-non terminal VarDecl, VarDeclRepeat, ArrayBracketsDeclOptional;
+non terminal VarDecl, VarDeclIdentRepeat, ArrayBracketsDeclOptional, VarDeclRepeat;
 non terminal ClassDecl, ClassExtendsOptional, ClassMethodDecl;
-non terminal MethodDecl, MethodDeclRepeat, MethodType, FormParsOptional, FormPars, FormParRepeat, FormParDecl;
+non terminal MethodDecl, MethodDeclRepeat, MethodType, FormParsOptional, FormPars, FormParDecl, FormParRepeat;
 
+
+non terminal FunctCall;
 non terminal StatementRepeat, Statement;
 non terminal DesignatorStatement, Designator, SubDesignatorRepeat, ArrayBracketsOptional;
 
 non terminal Assignop, Mulop, Addop;
 non terminal MinusOptional, ExprOptional, Expr;
-non terminal TermAddopRepeat, Term, Factor, FactorMulopRepeat, ActPars, ActParsOptional;
+non terminal TermAddopRepeat, Term, Factor, FactorMulopRepeat, ActPars, ActParsOptional, ActParsExprRepeat;
+
 non terminal Condition, CondTermOrRepeat, CondTerm, CondFactorAndRepeat, CondFact, Relop, RelopExprOptional;
 
-non terminal ElseStatementOptional, PrintWidthExists, CaseRepeat;
+non terminal ElseStatementOptional, PrintWidthOptional, CaseRepeat;
+
 
 
 precedence left ELSE;
@@ -102,7 +106,7 @@ ConstVarClassDeclRepeat ::= (ConstVarClassDeclRepeatExists) ConstVarClassDeclRep
                         (ConstVarClassDeclRepeatEmpty) /* empty */
                         ;
 
-ConstVarDecl ::= ConstDecl | VarDecl | ClassDecl;
+ConstVarClassDecl ::= ConstDecl | VarDecl | ClassDecl;
 
 Type ::= IDENT:typeName;
 
@@ -159,7 +163,7 @@ Statement ::= DesignatorStatement SEMICOLN
 
 DesignatorStatement ::= Designator Assignop Expr
                         |
-                        Designator LPAREN ActParsOptional RPAREN
+                        FunctCall
                         |
                         Designator INC
                         |
@@ -174,8 +178,9 @@ ArrayBracketsOptional ::= (ArrayBracketsOptional) LBRACKET Expr RBRACKET | /* em
 
 /*operators*/
 Assignop ::= EQUAL;
-Addop ::= ADD | SUB;
 Mulop ::= MUL | DIV | MOD;
+Addop ::= ADD | SUB;
+
 
 
 MinusOptional ::= (MinusExists) SUB | (MinusEmpty) /* empty */;
@@ -191,22 +196,23 @@ FactorMulopRepeat ::= FactorMulopRepeat Mulop Factor| /* empty */;
 
 Factor ::= (Var) Designator:v
             |
-            (FuncCall) Designator:func LPAREN ActParsOptional RPAREN
-            |
             NUM
             |
             CHAR
             |
             BOOLEAN
             |
-            NEW Type LBRACKET Expr RBRACKET
+            NEW Type:typeName LBRACKET Expr:ex RBRACKET
             |
             LPAREN Expr RPAREN
             ;
 
 
 
-ActParsOptional ::= (ActParsOptionalExists) ActPars | (ActParsOptionalEmpty) /* empty */;
+
+FunctCall ::= Designator:func LPAREN ActParsOptional:param RPAREN;
+
+ActParsOptional ::= ActPars | /* empty */;
 ActPars ::= ActPars COMMA Expr | Expr;
 
 
@@ -224,7 +230,4 @@ RelopExprOptional ::= (RelopExprExists) Relop Expr |(RelopExprEmpty) /* empty */
 ElseStatementOptional ::= (ElseStatementExists) ELSE Statement | (ElseStatementEmpty) /* empty */;
 CaseRepeat ::= CaseRepeat CASE NUM DDOTS StatementRepeat | /* empty */;
 PrintWidthOptional ::= (PrintWidthExists) COMMA NUM | (PrintWidthEmpty) /* empty */;
-
-
-
 
