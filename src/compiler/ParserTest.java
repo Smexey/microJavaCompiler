@@ -22,8 +22,12 @@ public class ParserTest {
 
     public static void main(String[] args) throws Exception {
         Logger log = Logger.getLogger(ParserTest.class);
+        File sourceCode;
+        if (args.length > 2)
+            sourceCode = new File(args[1]);
+        else
+            sourceCode = new File("testFiles/test1.mj");
 
-        File sourceCode = new File("testFiles/program.mj");
         if (!sourceCode.exists()) {
             log.error("Source file [" + sourceCode.getAbsolutePath() + "] not found!");
             return;

@@ -1,21 +1,30 @@
 
 program test301
 
-	int a,b;
-	int c;
+	//int a,b;
+	//int c;
 
-	int niz[];
-	char nizch[];
+	//int niz[];
+	//char nizch[];
 	
 {
 	void main()	
-		int bodovi;
-		bool bt;
+		//int bodovi;
+		//bool bt;
 	{
 
         bodovi = 'a';
 		bodovi++;
 
+		if(x){
+			if(y){
+
+			}else if(z){
+
+			}else{
+				
+			}
+		}
     }
 
 	void main2()	
