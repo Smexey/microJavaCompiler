@@ -38,17 +38,27 @@ program test301
 		}
     }
 
-	void main2(int a, int b)	
+	void mainError1(int a=2, int b)	
 		int b2,ac;
 	{
 		ac++;
 	}
 
-	void main3(int a)	
+	void mainError2(int a, int b = 1)	
+		int b2,ac;
+	{
+		ac++;
+	}
+
+	void main3(int a=1)	
 	{
 	}
 
-	void main4()	
+	void main4(int a,int b)	
+	{
+	}
+
+	void main4(int a)	
 	{
 	}
 

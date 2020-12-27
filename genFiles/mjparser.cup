@@ -147,9 +147,19 @@ MethodType ::= (MethodTypeReturn) Type | (MethodTypeReturnVoid) VOID;
 
 FormParsOptional ::= FormPars | /* empty */;
 FormPars ::= FormParDecl FormParRepeat;
-FormParDecl ::= Type IDENT ArrayBracketsDeclOptional;
 
-FormParRepeat ::= FormParRepeat COMMA FormParDecl | /* empty */;
+FormParDecl ::= Type IDENT ArrayBracketsDeclOptional
+                |
+                error
+                ;
+
+
+FormParRepeat ::= FormParRepeat COMMA FormParDecl 
+                    |
+                    error COMMA
+                    |
+                    /* empty */
+                    ;
 
 
 StatementRepeat ::= StatementRepeat Statement | /* empty */;
