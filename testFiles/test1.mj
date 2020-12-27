@@ -1,11 +1,22 @@
 
 program test301
 
-	//int a,b;
-	//int c;
+	const int c1 = 3,c2 = 5;
+	
+	int a = 3;
+	int a1;
 
-	//int niz[];
-	//char nizch[];
+	int b2;
+
+	int c3;
+
+	int x;
+
+	int c3 = 3,c4 = 5;
+
+	const int c5 = 3,c6 = 5;
+
+
 	
 {
 	void main()	
@@ -27,10 +38,18 @@ program test301
 		}
     }
 
-	void main2()	
+	void main2(int a, int b)	
 		int b2,ac;
 	{
 		ac++;
+	}
+
+	void main3(int a)	
+	{
+	}
+
+	void main4()	
+	{
 	}
 
 }

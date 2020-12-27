@@ -115,8 +115,19 @@ ConstValue ::= NUM | CHAR | BOOLEAN;
 ConstDeclRepeat ::= ConstDeclRepeat COMMA IDENT EQUAL ConstValue | /* empty */;
 
 
-VarDecl ::= Type IDENT ArrayBracketsDeclOptional VarDeclIdentRepeat SEMICOLN;
-VarDeclIdentRepeat ::= VarDeclIdentRepeat COMMA IDENT ArrayBracketsDeclOptional | /* empty */;
+VarDecl ::= Type IDENT ArrayBracketsDeclOptional VarDeclIdentRepeat SEMICOLN
+            |
+            error SEMICOLN
+            ;
+
+VarDeclIdentRepeat ::= VarDeclIdentRepeat COMMA IDENT ArrayBracketsDeclOptional 
+                        |
+                        error COMMA
+                        |
+                        /* empty */
+                        ;
+
+
 ArrayBracketsDeclOptional ::= (ArrayBracketsDeclExists) LBRACKET RBRACKET | /* empty */ (ArrayBracketsDeclEmpty);
 VarDeclRepeat ::= VarDeclRepeat VarDecl | /* empty */;
 
@@ -132,9 +143,12 @@ MethodType ::= (MethodTypeReturn) Type | (MethodTypeReturnVoid) VOID;
 
 
 //methodDeclPars != varDecl
+
+
 FormParsOptional ::= FormPars | /* empty */;
 FormPars ::= FormParDecl FormParRepeat;
 FormParDecl ::= Type IDENT ArrayBracketsDeclOptional;
+
 FormParRepeat ::= FormParRepeat COMMA FormParDecl | /* empty */;
 
 
