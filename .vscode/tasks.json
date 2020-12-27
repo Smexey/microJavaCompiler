@@ -14,9 +14,9 @@
         },
         {
             "label": "openMainLog",
-            "command": "code",
-            "type": "shell",
+            "command": "code.cmd",
             "args": [
+                "-r",
                 "${workspaceFolder}/logs/mj-test.log"
             ]
         },
@@ -34,7 +34,7 @@
             "command": "rm",
             "args": [
                 "-rf",
-                "${workspaceFolder}/logs"
+                "${workspaceFolder}/logs/*"
             ]
         },
         {
