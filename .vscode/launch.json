@@ -12,6 +12,7 @@
             
             "cwd": "${workspaceFolder}",
             // "preLaunchTask": "generateCode",
+            "postDebugTask": "openMainLog"
         }
     ]
 }

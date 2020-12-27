@@ -83,7 +83,7 @@ non terminal FunctCall;
 non terminal StatementRepeat, Statement;
 non terminal DesignatorStatement, Designator, SubDesignatorRepeat, ArrayBracketsOptional;
 
-non terminal Assignop, Mulop, Addop;
+non terminal Assignment, Assignop, Mulop, Addop;
 non terminal MinusOptional, ExprOptional, Expr;
 non terminal TermAddopRepeat, Term, Factor, FactorMulopRepeat, ActPars, ActParsOptional;
 
@@ -91,6 +91,8 @@ non terminal Condition, CondTermOrRepeat, CondTerm, CondFactorAndRepeat, CondFac
 
 non terminal ElseStatementOptional, PrintWidthOptional, CaseRepeat;
 
+
+non terminal SuperClass;
 
 
 precedence left ELSE;
@@ -133,8 +135,11 @@ VarDeclRepeat ::= VarDeclRepeat VarDecl | /* empty */;
 
 
 ClassDecl ::= CLASS IDENT ClassExtendsOptional LBRACE VarDeclRepeat ClassMethodDecl RBRACE;
-ClassExtendsOptional ::= (ClassExtendsExists) EXTENDS IDENT | /* empty */ (ClassExtendsEmpty);
+ClassExtendsOptional ::= (ClassExtendsExists) EXTENDS SuperClass | /* empty */ (ClassExtendsEmpty);
 ClassMethodDecl ::= LBRACE MethodDeclRepeat RBRACE;
+
+SuperClass::= IDENT | (ErrSuperClass) error;
+
 
 
 MethodDecl ::= MethodType IDENT LPAREN FormParsOptional RPAREN VarDeclRepeat LBRACE StatementRepeat RBRACE;
@@ -185,7 +190,7 @@ Statement ::= DesignatorStatement SEMICOLN
             ;
 
 
-DesignatorStatement ::= Designator Assignop Expr
+DesignatorStatement ::= Assignment
                         |
                         FunctCall
                         |
@@ -194,6 +199,10 @@ DesignatorStatement ::= Designator Assignop Expr
                         Designator DECR
                         ;
 
+Assignment ::= Designator Assignop Expr
+                |
+                error
+                ;
 
 Designator ::= IDENT ArrayBracketsOptional SubDesignatorRepeat;
 SubDesignatorRepeat ::= SubDesignatorRepeat DOT IDENT ArrayBracketsOptional | /* empty */;
@@ -239,7 +248,7 @@ ActParsOptional ::= (ActParsExists) ActPars | (ActParsEmpty) /* empty */;
 ActPars ::= ActPars COMMA Expr | Expr;
 
 
-Condition ::= CondTerm CondTermOrRepeat;
+Condition ::= CondTerm CondTermOrRepeat | (ErrCondition) error;
 CondTermOrRepeat ::= CondTermOrRepeat OR CondTerm | /* empty */;
 
 CondTerm ::= CondFact CondFactorAndRepeat;

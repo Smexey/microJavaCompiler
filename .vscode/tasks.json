@@ -13,10 +13,28 @@
             ]
         },
         {
+            "label": "openMainLog",
+            "command": "code",
+            "type": "shell",
+            "args": [
+                "${workspaceFolder}/logs/mj-test.log"
+            ]
+        },
+        {
             "label": "clean",
             "dependsOn": [
                 "lexerClean",
-                "parserClean"
+                "parserClean",
+                "logsClean"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "logsClean",
+            "command": "rm",
+            "args": [
+                "-rf",
+                "${workspaceFolder}/logs"
             ]
         },
         {
@@ -30,10 +48,10 @@
                 "${workspaceFolder}/genFiles/mjlexer.lex"
             ],
             "group": "build",
-            "dependsOn": "lexClean"
+            "dependsOn": "lexerClean"
         },
         {
-            "label": "lexClean",
+            "label": "lexerClean",
             "command": "rm",
             "args": [
                 "-f",
@@ -55,8 +73,7 @@
                 "-parser",
                 "Parser",
                 "-buildtree",
-                // "-dump_states",
-                "${workspaceFolder}/genFiles/mjparser.cup",
+                "${workspaceFolder}/genFiles/mjparser.cup"
             ],
             "group": "build",
             "dependsOn": "parserClean"
@@ -69,21 +86,15 @@
                 "${workspaceFolder}/src/compiler/Parser.java",
                 "${workspaceFolder}/src/compiler/sym.java",
                 "${workspaceFolder}/src/ast/",
-                "${workspaceFolder}/genFiles/mjparser_astbuild.cup",
-            ],
+                "${workspaceFolder}/genFiles/mjparser_astbuild.cup"
+            ]
         },
         {
             "label": "fixAstPackage",
-            // "windows": {
-            //     "type": "shell",
-            //     "command": "foreach($file in Get-ChildItem ${workspaceFolder}/src/ast *.java) { (Get-Content ${workspaceFolder}/src/ast/$file).Replace('src.ast','ast') | Set-Content ${workspaceFolder}/src/ast/$file}",
-            //     "args": []
-            // },
             "command": "sed",
             "args": [
                 "-i",
                 "'s/src.ast/ast/g'",
-                // mora ovakav path 
                 "${workspaceFolder}/src/ast/*.java"
             ],
             "dependsOn": "parserGen"

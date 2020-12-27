@@ -1,0 +1,106 @@
+program test1
+
+	const int c1 = 3,c2 = 5;
+	
+
+	//error 
+	int a = 3;
+	
+	int a1;
+
+	int b2;
+
+	int c3;
+
+	int x;
+
+
+	//error 
+	int c3 = 3,c4 = 5;
+
+	const int c5 = 3,c6 = 5;
+
+class Predmet
+{
+	 int tezina = 5;
+	 char vrsta;
+
+	{
+		 void postaviTezinu(int tezina) {this.tezina = tezina;}  
+		 void ucitajTezinu() { read(tezina); }
+		 int zapremina() { return 0;}
+		 int Q() {return zapremina() * tezina;}
+		 void postaviVrstu(char vrsta) {this.vrsta = vrsta;}
+		 char dohvVrstu() { return vrsta; }
+		 int dohvTezinu() { return tezina; }
+	}
+}
+
+
+class Kvadar extends +Predmet
+{
+	 int a, b, c;
+	{
+		 void postaviTezinu(int tezina) {this.tezina = tezina; vrsta = 'k';}
+		 void postaviStranice(int a, int b, int c) {this.a = a; this.b = b; this.c = c; vrsta = 'k';}
+		 int zapremina()
+			int z;
+		{
+			z = a * b * c;
+			return z;
+		}
+	}
+}
+
+
+{
+	void main()	
+		//int bodovi;
+		//bool bt;
+	{
+
+		x = a+5+c;
+
+
+		//error 
+		y = a+;
+
+        bodovi = 'a';
+		bodovi++;
+
+		if(x){
+			if(y){
+
+			}else if(z){
+
+			}else{
+				
+			}
+		}
+    }
+
+	void mainError1(int a=2, int b)	
+		int b2,ac;
+	{
+		ac++;
+	}
+
+	void mainError2(int a, int +b)	
+		int b2,ac;
+	{
+		ac++;
+	}
+
+	void main3(int a=1)	
+	{
+	}
+
+	void main4(int a,int b)	
+	{
+	}
+
+	void main4(int a)	
+	{
+	}
+
+}
