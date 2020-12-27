@@ -9,7 +9,7 @@
             },
             "dependsOn": [
                 "lexerGen",
-                "fixAstPackage"
+                "parserGen"
             ]
         },
         {
@@ -61,6 +61,9 @@
         {
             "label": "parserGen",
             "command": "java",
+            "options": {
+                "cwd": "${workspaceFolder}/src/"
+            },
             "args": [
                 "-jar",
                 "${workspaceFolder}/lib/cup_v10k.jar",
@@ -69,7 +72,7 @@
                 "-package",
                 "compiler",
                 "-ast",
-                "src.ast",
+                "ast",
                 "-parser",
                 "Parser",
                 "-buildtree",
@@ -88,16 +91,6 @@
                 "${workspaceFolder}/src/ast/",
                 "${workspaceFolder}/genFiles/mjparser_astbuild.cup"
             ]
-        },
-        {
-            "label": "fixAstPackage",
-            "command": "sed",
-            "args": [
-                "-i",
-                "'s/src.ast/ast/g'",
-                "${workspaceFolder}/src/ast/*.java"
-            ],
-            "dependsOn": "parserGen"
         }
     ]
 }
