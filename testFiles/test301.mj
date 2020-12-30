@@ -45,9 +45,14 @@ program test301
 		read(bodovi);
 		bt = true;
 		
-		//print(bt ? bodovi : bodovi + 10);
-		//print(false ? bodovi + 20 : bodovi + 30);
+		
+
+		print(bt ? bodovi : bodovi + 10);
+		print(false ? bodovi + 20 : bodovi + 30);
 		//print(bodovi > 10 ? '+' : '-');
+
+		ternary ? ternarya : ternaryb + 10;
+
 	}
 }
 

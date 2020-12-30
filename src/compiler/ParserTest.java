@@ -25,7 +25,7 @@ public class ParserTest {
         if (args.length > 2)
             sourceCode = new File(args[1]);
         else
-            sourceCode = new File("testFiles/parserErrorRecoveryTest.mj");
+            sourceCode = new File("testFiles/ternaryTest.mj");
 
         if (!sourceCode.exists()) {
             log.error("Source file [" + sourceCode.getAbsolutePath() + "] not found!");

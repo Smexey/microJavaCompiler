@@ -81,6 +81,7 @@ import java_cup.runtime.Symbol;
 "extends" 	{ return newSymbol(sym.EXTENDS, yytext()); }
 "do" 		{ return newSymbol(sym.DO, yytext()); }
 "while" 	{ return newSymbol(sym.WHILE, yytext()); }
+"?" 		{ return newSymbol(sym.QMARK, yytext()); }
 
 <YYINITIAL> "//" { yybegin(COMMENT); }
 <COMMENT> "\r\n" { yybegin(YYINITIAL); }

@@ -91,8 +91,8 @@ non terminal Condition, CondTermOrRepeat, CondTerm, CondFactorAndRepeat, CondFac
 
 non terminal ElseStatementOptional, PrintWidthOptional, CaseRepeat;
 
-
 non terminal SuperClass;
+non terminal SmolExpr;
 
 
 precedence left ELSE;
@@ -170,23 +170,23 @@ FormParRepeat ::= FormParRepeat COMMA FormParDecl
 StatementRepeat ::= StatementRepeat Statement | /* empty */;
 Statement ::= DesignatorStatement SEMICOLN
             |
-            IF LPAREN Condition RPAREN Statement ElseStatementOptional
+            (IfStatement) IF LPAREN Condition RPAREN Statement ElseStatementOptional
             |
-            DO Statement WHILE LPAREN Condition RPAREN SEMICOLN
+            (DoWhileStatement) DO Statement WHILE LPAREN Condition RPAREN SEMICOLN
             |
-            SWITCH LPAREN Expr RPAREN LBRACE CaseRepeat RBRACE
+            (SwitchStatement) SWITCH LPAREN Expr RPAREN LBRACE CaseRepeat RBRACE
             |
-            BREAK SEMICOLN
+            (BreakStatement) BREAK SEMICOLN
             |
-            CONTINUE SEMICOLN
+            (ContinueStatement) CONTINUE SEMICOLN
             |
-            RETURN ExprOptional SEMICOLN
+            (ReturnStatement) RETURN ExprOptional SEMICOLN
             |
-            READ LPAREN Designator RPAREN SEMICOLN
+            (ReadStatement) READ LPAREN Designator RPAREN SEMICOLN
             |
-            PRINT LPAREN Expr PrintWidthOptional RPAREN SEMICOLN
+            (PrintStatement) PRINT LPAREN Expr PrintWidthOptional RPAREN SEMICOLN
             |
-            LBRACE StatementRepeat RBRACE
+            (CodeBlockStatement) LBRACE StatementRepeat RBRACE
             ;
 
 
@@ -214,13 +214,25 @@ Mulop ::= MUL | DIV | MOD;
 Addop ::= ADD | SUB;
 
 
-
 MinusOptional ::= (MinusExists) SUB | (MinusEmpty) /* empty */;
 
 
-//TODO: TERNARNI 
+
+//TERNARNI old code
+//Expr::= MinusOptional Term TermAddopRepeat;
+
+
+//new ziza ternarni
+Expr ::= (TernaryOperatorExpr) SmolExpr QMARK SmolExpr DDOTS SmolExpr
+        |
+        SmolExpr
+        ;
+
+SmolExpr ::=  MinusOptional Term TermAddopRepeat;
+
+
+
 ExprOptional ::= (ExprExists) Expr | (ExprEmpty) /* empty */;
-Expr::= MinusOptional Term TermAddopRepeat;
 
 TermAddopRepeat ::= TermAddopRepeat Addop Term | /* empty */;
 Term ::= Factor FactorMulopRepeat;
@@ -262,4 +274,9 @@ RelopExprOptional ::= (RelopExprExists) Relop Expr |(RelopExprEmpty) /* empty */
 ElseStatementOptional ::= (ElseStatementExists) ELSE Statement | (ElseStatementEmpty) /* empty */;
 CaseRepeat ::= CaseRepeat CASE NUM DDOTS StatementRepeat | /* empty */;
 PrintWidthOptional ::= (PrintWidthExists) COMMA NUM | (PrintWidthEmpty) /* empty */;
+
+
+
+
+
 
