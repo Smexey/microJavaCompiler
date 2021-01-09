@@ -9,7 +9,8 @@ import org.apache.log4j.xml.DOMConfigurator;
 
 import ast.Program;
 import java_cup.runtime.Symbol;
-
+import rs.etf.pp1.symboltable.Tab;
+import util.DumpSymbolTableVisitorExt;
 import util.Log4JUtils;
 
 public class ParserTest {
@@ -25,7 +26,7 @@ public class ParserTest {
         if (args.length > 2)
             sourceCode = new File(args[1]);
         else
-            sourceCode = new File("testFiles/ternaryTest.mj");
+            sourceCode = new File("testFiles/semanticTest.mj");
 
         if (!sourceCode.exists()) {
             log.error("Source file [" + sourceCode.getAbsolutePath() + "] not found!");
@@ -39,6 +40,11 @@ public class ParserTest {
             Parser p = new Parser(lexer);
             Symbol s = p.parse(); // pocetak parsiranja
             Program prog = (Program) (s.value);
+
+            Tab.init();
+            SemanticPass semanticCheck = new SemanticPass();
+            prog.traverseBottomUp(semanticCheck);
+            Tab.dump(new DumpSymbolTableVisitorExt());
 
             log.info("===========================");
             log.info(prog.toString(""));

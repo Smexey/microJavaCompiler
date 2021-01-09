@@ -14,11 +14,20 @@
         },
         {
             "label": "openMainLog",
-            "command": "code.cmd",
+            "type": "shell",
+            "command": "code",
             "args": [
                 "-r",
                 "${workspaceFolder}/logs/mj-test.log"
-            ]
+            ],
+            "presentation": {
+                "echo": false,
+                "reveal": "silent",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": false,
+            }
         },
         {
             "label": "clean",

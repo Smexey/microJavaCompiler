@@ -72,11 +72,11 @@ terminal Character CHAR;
 
 non terminal Program, ConstVarClassDeclRepeat, ConstVarClassDecl;
 
-non terminal Type;
+
 non terminal ConstDecl, ConstValue, ConstDeclRepeat;
 non terminal VarDecl, VarDeclIdentRepeat, ArrayBracketsDeclOptional, VarDeclRepeat;
 non terminal ClassDecl, ClassExtendsOptional, ClassMethodDecl;
-non terminal MethodDecl, MethodDeclRepeat, MethodType, FormParsOptional, FormPars, FormParDecl, FormParRepeat;
+non terminal MethodDeclRepeat, MethodType, FormParsOptional, FormPars, FormParDecl, FormParRepeat;
 
 
 non terminal FunctCall;
@@ -95,13 +95,27 @@ non terminal SuperClass;
 non terminal SmolExpr;
 
 
+
+
+//SYNTAX NON TERMINAL
+non terminal rs.etf.pp1.symboltable.concepts.Obj ProgramName;
+non terminal rs.etf.pp1.symboltable.concepts.Struct Type;
+non terminal rs.etf.pp1.symboltable.concepts.Obj MethodDecl, MethodTypeAndName;
+
+
+//non terminal rs.etf.pp1.symboltable.concepts.Struct MethodTypeReturn, MethodTypeReturnVoid;
+
+
+//PRECEDENCE
 precedence left ELSE;
+
+
 
 //terminali allcaps
 //zagrade na desnoj strani su ime klase u ast
-
-
-Program ::= (Program) PROGRAM IDENT:programName ConstVarClassDeclRepeat LBRACE MethodDeclRepeat RBRACE;
+//PARSER
+Program ::= (Program) PROGRAM ProgramName ConstVarClassDeclRepeat LBRACE MethodDeclRepeat RBRACE;
+ProgramName ::= (ProgramName) IDENT:programName;
 
 ConstVarClassDeclRepeat ::= (ConstVarClassDeclRepeatExists) ConstVarClassDeclRepeat ConstVarClassDecl
                         |
@@ -110,19 +124,19 @@ ConstVarClassDeclRepeat ::= (ConstVarClassDeclRepeatExists) ConstVarClassDeclRep
 
 ConstVarClassDecl ::= ConstDecl | VarDecl | ClassDecl;
 
-Type ::= IDENT:typeName;
+Type ::= (Type) IDENT:typeName;
 
 ConstDecl ::= CONST Type IDENT EQUAL ConstValue ConstDeclRepeat SEMICOLN;
 ConstValue ::= NUM | CHAR | BOOLEAN;
 ConstDeclRepeat ::= ConstDeclRepeat COMMA IDENT EQUAL ConstValue | /* empty */;
 
 
-VarDecl ::= Type IDENT ArrayBracketsDeclOptional VarDeclIdentRepeat SEMICOLN
+VarDecl ::= (VarDeclNoErr) Type:Type IDENT:Name ArrayBracketsDeclOptional VarDeclIdentRepeat SEMICOLN
             |
             error SEMICOLN
             ;
 
-VarDeclIdentRepeat ::= VarDeclIdentRepeat COMMA IDENT ArrayBracketsDeclOptional 
+VarDeclIdentRepeat ::=  VarDeclIdentRepeat COMMA IDENT:Name ArrayBracketsDeclOptional 
                         |
                         error COMMA
                         |
@@ -142,9 +156,11 @@ SuperClass::= IDENT | (ErrSuperClass) error;
 
 
 
-MethodDecl ::= MethodType IDENT LPAREN FormParsOptional RPAREN VarDeclRepeat LBRACE StatementRepeat RBRACE;
+MethodDecl ::= (MethodDecl) MethodTypeAndName LPAREN FormParsOptional RPAREN VarDeclRepeat LBRACE StatementRepeat RBRACE;
 MethodDeclRepeat ::= MethodDeclRepeat MethodDecl | /* empty */;
 MethodType ::= (MethodTypeReturn) Type | (MethodTypeReturnVoid) VOID;
+
+MethodTypeAndName ::= (MethodTypeAndName) MethodType:retType IDENT:name;
 
 
 //methodDeclPars != varDecl

@@ -9,10 +9,9 @@
             "name": "Launch Current File",
             "request": "launch",
             "mainClass": "${file}",
-            
             "cwd": "${workspaceFolder}",
             // "preLaunchTask": "generateCode",
-            "postDebugTask": "openMainLog"
+            // "postDebugTask": "openMainLog"
         }
     ]
 }

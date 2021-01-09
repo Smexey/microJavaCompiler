@@ -1,0 +1,25 @@
+
+program semanticTest
+    bool bool1;
+    int int1;
+    
+    char c1,c2,c3;
+    int int2,int3;
+    bool bool2,bool3;
+
+    int intarr1[];
+    char charrarr0[];
+    char carr1[], carr2[];
+
+    int fakeType;
+    //fakeType fakeTypeTest;
+{
+	void main()
+        int metha;
+        int methb;	
+	{
+
+	}
+}
+
+
