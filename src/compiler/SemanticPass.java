@@ -222,23 +222,26 @@ public class SemanticPass extends VisitorAdaptor {
         Obj fDes = functCall.getDesignator().obj;
         if (fDes.getKind() == Obj.Meth) {
 
-            // if (functCall.getActParsOptional() instanceof ActParsExists) {
+            if (functCall.getActParsOptional() instanceof ActParsExists) {
+                if (fDes.getLevel() != actParsList.size()) {
+                    reportError("wrong param num", functCall);
+                    return;
+                }
 
-            // Iterator<Obj> itObj = fDes.getLocalSymbols().iterator();
-            // Iterator<Struct> itStr = actParsList.iterator();
-            // // u levelu se cuva br formpars
-            // System.out.println("level: " + fDes.getLevel());
-            // for (int i = 0; i < fDes.getLevel(); i++) {
-            // Obj o = itObj.next();
-            // Struct s = itStr.next();
-            // if (!o.getType().assignableTo(s)) {
-            // // ne radi
-            // reportError("missmatch param: " + o.getType().getKind() + " " + s.getKind(),
-            // functCall);
-            // return;
-            // }
-            // }
-            // }
+                Iterator<Obj> itObj = fDes.getLocalSymbols().iterator();
+                Iterator<Struct> itStr = actParsList.iterator();
+                // u levelu se cuva br formpars
+                System.out.println("level: " + fDes.getLevel());
+                for (int i = 0; i < fDes.getLevel(); i++) {
+                    Obj o = itObj.next();
+                    Struct s = itStr.next();
+                    if (!o.getType().assignableTo(s)) {
+                        // ne radi
+                        reportError("missmatch param: " + o.getType().getKind() + " " + s.getKind(), functCall);
+                        return;
+                    }
+                }
+            }
             functCall.struct = fDes.getType();
         } else {
             reportError("not a function", functCall);

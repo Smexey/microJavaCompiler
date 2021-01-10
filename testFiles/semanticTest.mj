@@ -16,9 +16,9 @@ program semanticTest
     //fakeType fakeTypeTest;
 
     //const test
-    const int constint1 = 'a';
-    const int constint2 = 3, constint3 = 1 ,constint4 = true;
-    const bool constbool = 1;
+    //const int constint1 = 'a';
+    //const int constint2 = 3, constint3 = 1 ,constint4 = true;
+    //const bool constbool = 1;
 
     int postConst;
 
@@ -35,9 +35,14 @@ program semanticTest
     }
 	void main(int formParb, int formPara)
         int methVara;
-        int methVarb;	
+        int methVarb;
 	{
-        foo(1);
+
+        //methVara=5+2+true+false;
+        methVarb = true+false;
+
+
+        foo(true+false);
 	}
 }
 
