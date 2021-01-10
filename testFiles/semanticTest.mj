@@ -31,7 +31,7 @@ program semanticTest
     int foo(int a)
     
     {
-
+        
         return 1;
     }
 	void main()

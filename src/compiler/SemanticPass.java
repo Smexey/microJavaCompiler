@@ -102,7 +102,6 @@ public class SemanticPass extends VisitorAdaptor {
     // CONST
     public void visit(ConstDecl constDecl) {
         if (Tab.find(constDecl.getName()) == Tab.noObj) {
-            // check assignability
 
             Obj o = constDecl.getConstValue().obj;
             Struct s = o.getType();
