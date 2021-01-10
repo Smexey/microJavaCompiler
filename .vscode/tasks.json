@@ -26,7 +26,7 @@
                 "focus": false,
                 "panel": "shared",
                 "showReuseMessage": false,
-                "clear": false,
+                "clear": false
             }
         },
         {
@@ -36,7 +36,14 @@
                 "parserClean",
                 "logsClean"
             ],
-            "problemMatcher": []
+            "presentation": {
+                "echo": true,
+                "reveal": "silent",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
         },
         {
             "label": "logsClean",
@@ -44,7 +51,15 @@
             "args": [
                 "-rf",
                 "${workspaceFolder}/logs/*"
-            ]
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "silent",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
         },
         {
             "label": "lexerGen",
