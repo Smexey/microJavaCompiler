@@ -1,5 +1,6 @@
-
 program semanticTest
+
+    //int test
     bool bool1;
     int int1;
     
@@ -13,10 +14,22 @@ program semanticTest
 
     int fakeType;
     //fakeType fakeTypeTest;
+
+    //const test
+    const int constint1 = 2;
+    const int constint2 = 3, constint3 = 1 ,constint4 = 'a';
+    const bool constbool = 1;
+
+    int postConst;
+
+    //clas test
+
+
+    
 {
 	void main()
-        int metha;
-        int methb;	
+        int methVara;
+        int methVarb;	
 	{
 
 	}

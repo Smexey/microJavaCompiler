@@ -3,7 +3,12 @@ package compiler;
 import org.apache.log4j.Logger;
 
 import ast.ArrayBracketsDeclExists;
-import ast.ArrayBracketsOptional;
+import ast.ConstDecl;
+import ast.ConstDeclRepeatDerived1;
+import ast.ConstValue;
+import ast.ConstValueBool;
+import ast.ConstValueChar;
+import ast.ConstValueNum;
 import ast.ConstVarClassDecl;
 import ast.MethodDecl;
 import ast.MethodTypeAndName;
@@ -13,8 +18,6 @@ import ast.Program;
 import ast.ProgramName;
 import ast.SyntaxNode;
 import ast.Type;
-import ast.VarDecl;
-import ast.VarDeclIdentRepeat;
 import ast.VarDeclIdentRepeatDerived1;
 import ast.VarDeclNoErr;
 import ast.VisitorAdaptor;
@@ -60,6 +63,7 @@ public class SemanticPass extends VisitorAdaptor {
         Tab.openScope();
     }
 
+    // VAR
     boolean arrayBracketsDecl = false;
 
     public void visit(ArrayBracketsDeclExists arBrDeclExists) {
@@ -95,18 +99,56 @@ public class SemanticPass extends VisitorAdaptor {
         }
     }
 
-    public void visit(ConstVarClassDecl varDecl) {
-        // typename + niz identifikatora;
-        currDeclType = null;
+    // CONST
+    public void visit(ConstDecl constDecl) {
+        if (Tab.find(constDecl.getName()) == Tab.noObj) {
+            // check assignability
+            Tab.insert(Obj.Con, constDecl.getName(), constDecl.getType().struct);
+        } else {
+            reportError("const redefinition ", constDecl);
+        }
     }
 
+    public void visit(ConstDeclRepeatDerived1 constDeclRep) {
+        if (Tab.find(constDeclRep.getName()) == Tab.noObj) {
+
+            Obj o = constDeclRep.getConstValue().obj;
+            Struct s = o.getType();
+            if (currDeclType.assignableTo(s)) {
+                Tab.insert(Obj.Con, constDeclRep.getName(), currDeclType);
+            } else
+                reportError("const not assignable ", constDeclRep);
+
+        } else
+            reportError("const redefinition ", constDeclRep);
+    }
+
+    public void visit(ConstValueNum cv) {
+        Obj o = new Obj(Obj.Con, "", Tab.intType);
+        o.setAdr(cv.getN1());
+        cv.obj = o;
+    }
+
+    public void visit(ConstValueChar cv) {
+        Obj o = new Obj(Obj.Con, "", Tab.charType);
+        o.setAdr(cv.getC1());
+        cv.obj = o;
+    }
+
+    public void visit(ConstValueBool cv) {
+        Obj o = new Obj(Obj.Con, "", this.boolType);
+        o.setAdr(cv.getB1() ? 1 : 0);
+        cv.obj = o;
+    }
+
+    // TYPE
     public void visit(Type type) {
         Obj typeNode = Tab.find(type.getTypeName());
         if (typeNode == Tab.noObj) {
             reportError("Nije pronadjen tip " + type.getTypeName() + " u tabeli simbola", null);
             type.struct = Tab.noType;
         } else {
-            if (Obj.Type == typeNode.getKind()) {
+            if (typeNode.getKind() == Obj.Type) {
                 type.struct = typeNode.getType();
             } else {
                 reportError("Greska: Ime " + type.getTypeName() + " ne predstavlja tip ", type);
@@ -116,9 +158,21 @@ public class SemanticPass extends VisitorAdaptor {
         currDeclType = type.struct;
     }
 
+    public void visit(ConstVarClassDecl varDecl) {
+        // typename + niz identifikatora;
+        currDeclType = null;
+    }
+
+    // CLASS
+    // TODO
+
+    // METHOD
     Obj currentMethod = null;
 
+    boolean returnFound = false;
+
     public void visit(MethodTypeAndName meth) {
+        returnFound = false;
         Struct type = null;
         if (meth.getMethodType() instanceof MethodTypeReturn) {
             type = ((MethodTypeReturn) meth.getMethodType()).getType().struct;
@@ -132,6 +186,10 @@ public class SemanticPass extends VisitorAdaptor {
     }
 
     public void visit(MethodDecl meth) {
+
+        if (!returnFound && currentMethod.getType() != Tab.noType) {
+            reportError("no return ", meth);
+        }
         // cuvam curr method jer potpis metode je retType name(paramList)
         Tab.chainLocalSymbols(currentMethod);
         Tab.closeScope();

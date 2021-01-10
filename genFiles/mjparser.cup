@@ -66,14 +66,14 @@ terminal DDOTS, QMARK;
 //popraviti boolean?
 terminal String IDENT;
 terminal Integer NUM;
-terminal Object BOOLEAN;
+terminal Boolean BOOLEAN;
 terminal Character CHAR;
 
 
 non terminal Program, ConstVarClassDeclRepeat, ConstVarClassDecl;
 
 
-non terminal ConstDecl, ConstValue, ConstDeclRepeat;
+non terminal ConstDecl, ConstDeclRepeat;
 non terminal VarDecl, VarDeclIdentRepeat, ArrayBracketsDeclOptional, VarDeclRepeat;
 non terminal ClassDecl, ClassExtendsOptional, ClassMethodDecl;
 non terminal MethodDeclRepeat, MethodType, FormParsOptional, FormPars, FormParDecl, FormParRepeat;
@@ -98,12 +98,12 @@ non terminal SmolExpr;
 
 
 //SYNTAX NON TERMINAL
-non terminal rs.etf.pp1.symboltable.concepts.Obj ProgramName;
 non terminal rs.etf.pp1.symboltable.concepts.Struct Type;
-non terminal rs.etf.pp1.symboltable.concepts.Obj MethodDecl, MethodTypeAndName;
+
+non terminal rs.etf.pp1.symboltable.concepts.Obj ProgramName;
+non terminal rs.etf.pp1.symboltable.concepts.Obj ConstValue, MethodDecl, MethodTypeAndName;
 
 
-//non terminal rs.etf.pp1.symboltable.concepts.Struct MethodTypeReturn, MethodTypeReturnVoid;
 
 
 //PRECEDENCE
@@ -126,9 +126,13 @@ ConstVarClassDecl ::= ConstDecl | VarDecl | ClassDecl;
 
 Type ::= (Type) IDENT:typeName;
 
-ConstDecl ::= CONST Type IDENT EQUAL ConstValue ConstDeclRepeat SEMICOLN;
-ConstValue ::= NUM | CHAR | BOOLEAN;
-ConstDeclRepeat ::= ConstDeclRepeat COMMA IDENT EQUAL ConstValue | /* empty */;
+ConstDecl ::= (ConstDecl) CONST Type:Type IDENT:Name EQUAL ConstValue:Val ConstDeclRepeat SEMICOLN;
+ConstValue ::= (ConstValueNum) NUM | (ConstValueChar) CHAR | (ConstValueBool) BOOLEAN;
+
+ConstDeclRepeat ::= ConstDeclRepeat COMMA IDENT:Name EQUAL ConstValue:Val
+                    |
+                    /* empty */
+                    ;
 
 
 VarDecl ::= (VarDeclNoErr) Type:Type IDENT:Name ArrayBracketsDeclOptional VarDeclIdentRepeat SEMICOLN
