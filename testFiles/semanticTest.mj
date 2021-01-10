@@ -28,21 +28,31 @@ program semanticTest
     
 {
 
-    char foo(int param)
+    char foo(int param,char c)
     {
         
         return 1;
     }
+
+    int foo2(bool param1)
+    {
+        return 2;
+    }
+
 	void main(int formParb, int formPara)
         int methVara;
         int methVarb;
 	{
 
         //methVara=5+2+true+false;
-        methVarb = true+false;
+        methVarb = 1+foo2(false);
 
 
-        foo(true+false);
+
+        intarr1[2] ++;
+
+
+        foo(foo2(true),'a');
 	}
 }
 

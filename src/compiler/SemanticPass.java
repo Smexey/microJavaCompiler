@@ -1,8 +1,8 @@
 package compiler;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
+import java.util.Stack;
 
 import org.apache.log4j.Logger;
 
@@ -23,6 +23,7 @@ public class SemanticPass extends VisitorAdaptor {
 
     SemanticPass() {
         Tab.currentScope().addToLocals(new Obj(Obj.Type, "bool", boolType));
+        reportInfo("==================SEMANTICSTART==============", null);
     }
 
     public void reportError(String message, SyntaxNode info) {
@@ -190,7 +191,7 @@ public class SemanticPass extends VisitorAdaptor {
         Tab.closeScope();
     }
 
-    public void visit(MethodLocalVar var) {
+    public void visit(FormParDeclNoErr var) {
         if (Tab.find(var.getName()) == Tab.noObj) {
             if (arrayBracketsDecl) {
                 Tab.insert(Obj.Var, var.getName(), new Struct(Struct.Array, var.getType().struct));
@@ -213,13 +214,53 @@ public class SemanticPass extends VisitorAdaptor {
         Obj obj = Tab.find(des.getName());
         if (obj != Tab.noObj) {
             des.obj = obj;
+            // ako postoje [] menja mu se tip u element niza
+            if (des.getArrayBracketsOptional() instanceof ArrayBracketsExists) {
+                des.obj = new Obj(Obj.Elem, "", obj.getType().getElemType());
+            }
         } else
             reportError("designator not declared ", des);
     }
 
+    public void visit(AssignmentNoErr as) {
+        if (as.getExpr().struct.assignableTo(as.getDesignator().obj.getType())) {
+            int kind = as.getDesignator().obj.getKind();
+            if (kind == Obj.Var || kind == Obj.Fld || kind == Obj.Elem) {
+                as.struct = as.getDesignator().obj.getType();
+            } else
+                reportError("not assignable to that desigantor", as);
+        } else
+            reportError("not assignable ", as);
+    }
+
+    public void visit(DesignatorStatementIncrement as) {
+        int kind = as.getDesignator().obj.getKind();
+        if (kind == Obj.Var || kind == Obj.Fld || kind == Obj.Elem) {
+            if (as.getDesignator().obj.getType() == Tab.intType) {
+
+            } else
+                reportError("designator must be inttype", as);
+        } else
+            reportError("not assignable to that desigantor", as);
+    }
+
+    public void visit(DesignatorStatementDecrement as) {
+        int kind = as.getDesignator().obj.getKind();
+        if (kind == Obj.Var || kind == Obj.Fld || kind == Obj.Elem) {
+            if (as.getDesignator().obj.getType() == Tab.intType) {
+
+            } else
+                reportError("designator must be inttype", as);
+        } else
+            reportError("not assignable to that desigantor", as);
+    }
+
     // FUNCTCALL
+    Stack<ArrayList<Struct>> actParsListStack = new Stack<>();
+
     public void visit(FunctCall functCall) {
-        Obj fDes = functCall.getDesignator().obj;
+        Obj fDes = functCall.getFunctDesignator().getDesignator().obj;
+        ArrayList<Struct> actParsList = actParsListStack.pop();
         if (fDes.getKind() == Obj.Meth) {
 
             if (functCall.getActParsOptional() instanceof ActParsExists) {
@@ -248,19 +289,21 @@ public class SemanticPass extends VisitorAdaptor {
         }
     }
 
-    ArrayList<Struct> actParsList = new ArrayList<>();
+    public void visit(FunctDesignator t) {
+        actParsListStack.push(new ArrayList<Struct>());
+    }
 
     public void visit(ActParsMultiple actPars) {
         System.out.println("act pars multiple: " + actPars.getExpr().struct.getKind());
-        actParsList.add(actPars.getExpr().struct);
+        actParsListStack.peek().add(actPars.getExpr().struct);
     }
 
     public void visit(ActParsSingle actPars) {
         System.out.println("act pars single: " + actPars.getExpr().struct.getKind());
-        actParsList.add(actPars.getExpr().struct);
+        actParsListStack.peek().add(actPars.getExpr().struct);
     }
 
-    // FACTOR
+    // EXPR && TERM && FACTOR
     public void visit(DesFactor df) {
         df.struct = df.getDesignator().obj.getType();
     }
@@ -281,7 +324,6 @@ public class SemanticPass extends VisitorAdaptor {
         df.struct = df.getExpr().struct;
     }
 
-    // EXPR
     public void visit(NoTernExpr expr) {
         expr.struct = expr.getSmolExpr().struct;
     }
@@ -316,6 +358,40 @@ public class SemanticPass extends VisitorAdaptor {
             t.struct = t.getFactor().struct;
         } else
             reportError("not compatible", t);
+    }
+
+    // DOWHILE && SWITCH
+    int doWhileDepth = 0;
+    int switchDepth = 0;
+
+    public void visit(StartDo t) {
+        doWhileDepth++;
+    }
+
+    public void visit(StartSwitch t) {
+        switchDepth++;
+    }
+
+    public void visit(DoWhileStatement t) {
+        doWhileDepth--;
+    }
+
+    public void visit(SwitchStatement t) {
+        switchDepth--;
+    }
+
+    public void visit(ContinueStatement t) {
+        if (doWhileDepth > 0) {
+            // BRAVO
+        } else
+            reportError("", t);
+    }
+
+    public void visit(BreakStatement t) {
+        if (switchDepth > 0 || doWhileDepth > 0) {
+            // BRAVO
+        } else
+            reportError("", t);
     }
 
 }

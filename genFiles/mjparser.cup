@@ -82,7 +82,7 @@ non terminal MethodDeclRepeat, MethodType, FormParsOptional, FormPars, FormParDe
 non terminal StatementRepeat, Statement;
 non terminal DesignatorStatement, SubDesignatorRepeat, ArrayBracketsOptional;
 
-non terminal Assignment, Assignop, Mulop, Addop;
+non terminal  Assignop, Mulop, Addop;
 non terminal MinusOptional;
 non terminal ActPars, ActParsOptional;
 
@@ -91,6 +91,8 @@ non terminal Condition, CondTermOrRepeat, CondTerm, CondFactorAndRepeat, CondFac
 non terminal ElseStatementOptional, PrintWidthOptional, CaseRepeat;
 
 non terminal SuperClass;
+
+non terminal StartSwitch, StartDo, FunctDesignator;
 
 
 //===================
@@ -103,8 +105,8 @@ non terminal rs.etf.pp1.symboltable.concepts.Obj ProgramName;
 non terminal rs.etf.pp1.symboltable.concepts.Obj ConstValue, MethodDecl, MethodTypeAndName;
 
 non terminal rs.etf.pp1.symboltable.concepts.Obj Designator;
-non terminal rs.etf.pp1.symboltable.concepts.Struct Factor,FactorMulopRepeat, Term,TermAddopRepeat, Expr, SmolExpr, FunctCall;
-
+non terminal rs.etf.pp1.symboltable.concepts.Struct Factor,FactorMulopRepeat, Term, TermAddopRepeat, Expr, SmolExpr, FunctCall;
+non terminal rs.etf.pp1.symboltable.concepts.Struct Assignment;
 
 //===================
 
@@ -175,7 +177,7 @@ MethodTypeAndName ::= (MethodTypeAndName) MethodType:retType IDENT:name;
 FormParsOptional ::= (FormParsExists) FormPars | /* empty */;
 FormPars ::= FormParDecl FormParRepeat;
 
-FormParDecl ::= (MethodLocalVar) Type:Type IDENT:Name ArrayBracketsDeclOptional
+FormParDecl ::= (FormParDeclNoErr) Type:Type IDENT:Name ArrayBracketsDeclOptional
                 |
                 error
                 ;
@@ -194,9 +196,9 @@ Statement ::= DesignatorStatement SEMICOLN
             |
             (IfStatement) IF LPAREN Condition RPAREN Statement ElseStatementOptional
             |
-            (DoWhileStatement) DO Statement WHILE LPAREN Condition RPAREN SEMICOLN
+            (DoWhileStatement) StartDo Statement WHILE LPAREN Condition RPAREN SEMICOLN
             |
-            (SwitchStatement) SWITCH LPAREN Expr RPAREN LBRACE CaseRepeat RBRACE
+            (SwitchStatement) StartSwitch LPAREN Expr RPAREN LBRACE CaseRepeat RBRACE
             |
             (BreakStatement) BREAK SEMICOLN
             |
@@ -213,14 +215,16 @@ Statement ::= DesignatorStatement SEMICOLN
             (CodeBlockStatement) LBRACE StatementRepeat RBRACE
             ;
 
+StartDo ::= (StartDo) DO;
+StartSwitch ::= (StartSwitch) SWITCH;
 
 DesignatorStatement ::= Assignment
                         |
                         FunctCall
                         |
-                        Designator INC
+                        (DesignatorStatementIncrement)Designator INC
                         |
-                        Designator DECR
+                        (DesignatorStatementDecrement)Designator DECR
                         ;
 
 Assignment ::= (AssignmentNoErr) Designator:Designator Assignop Expr:Expr
@@ -271,25 +275,26 @@ Factor ::=  (DesFactor) Designator:Designator
             ;
 
 
-FunctCall ::= (FunctCall) Designator:func LPAREN ActParsOptional:Params RPAREN;
+FunctCall ::= (FunctCall) FunctDesignator:FunctDesignator LPAREN ActParsOptional:Params RPAREN;
+FunctDesignator ::= (FunctDesignator) Designator:func;
 
 ActParsOptional ::= (ActParsExists) ActPars | (ActParsEmpty) /* empty */;
 ActPars ::= (ActParsMultiple) ActPars COMMA Expr:Expr | (ActParsSingle) Expr:Expr;
 
 
-Condition ::= CondTerm CondTermOrRepeat | (ErrCondition) error;
-CondTermOrRepeat ::= CondTermOrRepeat OR CondTerm | /* empty */;
+Condition ::= (ConditionNoErr) CondTerm:CondTerm CondTermOrRepeat:OtherCondTerms | error;
+CondTermOrRepeat ::= (CondTermOrRepeatExists) CondTermOrRepeat:OtherCondTerms OR CondTerm:CondTerm | /* empty */;
 
-CondTerm ::= CondFact CondFactorAndRepeat;
-CondFactorAndRepeat ::= CondFactorAndRepeat AND CondFact | /* empty */;
-CondFact ::= Expr RelopExprOptional;
+CondTerm ::= (CondTerm) CondFact:CondFact CondFactorAndRepeat:OtherCondFacts;
+CondFactorAndRepeat ::= (CondFactorAndRepeatExists) CondFactorAndRepeat:OtherCondFacts AND CondFact:CondFact | /* empty */;
+CondFact ::= Expr:Expr RelopExprOptional:OtherExpr;
 
 Relop ::= EQUALS | NEQUALS | GRT | GRTEQUAL | LESS | LESSEQUAL;
-RelopExprOptional ::= (RelopExprExists) Relop Expr |(RelopExprEmpty) /* empty */;
+RelopExprOptional ::= (RelopExprExists) Relop Expr:Expr |(RelopExprEmpty) /* empty */;
 
 
 ElseStatementOptional ::= (ElseStatementExists) ELSE Statement | (ElseStatementEmpty) /* empty */;
-CaseRepeat ::= CaseRepeat CASE NUM DDOTS StatementRepeat | /* empty */;
+CaseRepeat ::= (CaseRepeatExists) CaseRepeat CASE NUM DDOTS StatementRepeat | /* empty */;
 PrintWidthOptional ::= (PrintWidthExists) COMMA NUM | (PrintWidthEmpty) /* empty */;
 
 
