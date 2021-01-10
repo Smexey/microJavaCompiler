@@ -28,17 +28,16 @@ program semanticTest
     
 {
 
-    int foo(int a)
-    
+    char foo(int param)
     {
         
         return 1;
     }
-	void main()
+	void main(int formParb, int formPara)
         int methVara;
         int methVarb;	
 	{
-
+        foo(1);
 	}
 }
 

@@ -89,6 +89,9 @@ public class DumpSymbolTableVisitorExt extends DumpSymbolTableVisitor {
                     case Struct.Char:
                         output.append("char");
                         break;
+                    case Struct.Bool:
+                        output.append("bool");
+                        break;
                     case Struct.Class:
                         output.append("Class");
                         break;

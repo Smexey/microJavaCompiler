@@ -1,32 +1,22 @@
 package compiler;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+
 import org.apache.log4j.Logger;
 
-import ast.ArrayBracketsDeclExists;
-import ast.ConstDecl;
-import ast.ConstDeclRepeatDerived1;
-import ast.ConstValue;
-import ast.ConstValueBool;
-import ast.ConstValueChar;
-import ast.ConstValueNum;
-import ast.ConstVarClassDecl;
-import ast.MethodDecl;
-import ast.MethodTypeAndName;
-import ast.MethodTypeReturn;
-import ast.MethodTypeReturnVoid;
-import ast.Program;
-import ast.ProgramName;
-import ast.SyntaxNode;
-import ast.Type;
-import ast.VarDeclIdentRepeatDerived1;
-import ast.VarDeclNoErr;
-import ast.VisitorAdaptor;
+import ast.*;
 import rs.etf.pp1.symboltable.Tab;
 import rs.etf.pp1.symboltable.concepts.*;
 
 public class SemanticPass extends VisitorAdaptor {
 
     boolean errorDetected = false;
+
+    public boolean passed() {
+        return !errorDetected;
+    }
 
     Logger log = Logger.getLogger(getClass());
     Struct boolType = new Struct(Struct.Bool);
@@ -181,9 +171,9 @@ public class SemanticPass extends VisitorAdaptor {
         Struct type = null;
         if (meth.getMethodType() instanceof MethodTypeReturn) {
             type = ((MethodTypeReturn) meth.getMethodType()).getType().struct;
-            System.out.println("type je: " + type.getKind());
         } else if (meth.getMethodType() instanceof MethodTypeReturnVoid) {
             type = Tab.noType;
+
         }
         currentMethod = Tab.insert(Obj.Meth, meth.getName(), type);
 
@@ -192,16 +182,137 @@ public class SemanticPass extends VisitorAdaptor {
     }
 
     public void visit(MethodDecl meth) {
-
         if (!returnFound && currentMethod.getType() != Tab.noType) {
-            reportError("no return ", meth);
+            reportError("no return " + currentMethod.getType().getKind() + "", meth);
         }
         // cuvam curr method jer potpis metode je retType name(paramList)
         Tab.chainLocalSymbols(currentMethod);
         Tab.closeScope();
     }
 
-    public boolean passed() {
-        return !errorDetected;
+    public void visit(MethodLocalVar var) {
+        if (Tab.find(var.getName()) == Tab.noObj) {
+            if (arrayBracketsDecl) {
+                Tab.insert(Obj.Var, var.getName(), new Struct(Struct.Array, var.getType().struct));
+                arrayBracketsDecl = false;
+            } else {
+                Tab.insert(Obj.Var, var.getName(), var.getType().struct);
+            }
+        } else {
+            reportError("var redefinition ", var);
+        }
     }
+
+    public void visit(FormParsExists formPars) {
+        currentMethod.setLevel(Tab.currentScope().getnVars());
+    }
+
+    // STATEMENT
+    // DESIGNATOR
+    public void visit(Designator des) {
+        Obj obj = Tab.find(des.getName());
+        if (obj != Tab.noObj) {
+            des.obj = obj;
+        } else
+            reportError("designator not declared ", des);
+    }
+
+    // FUNCTCALL
+    public void visit(FunctCall functCall) {
+        Obj fDes = functCall.getDesignator().obj;
+        if (fDes.getKind() == Obj.Meth) {
+
+            // if (functCall.getActParsOptional() instanceof ActParsExists) {
+
+            // Iterator<Obj> itObj = fDes.getLocalSymbols().iterator();
+            // Iterator<Struct> itStr = actParsList.iterator();
+            // // u levelu se cuva br formpars
+            // System.out.println("level: " + fDes.getLevel());
+            // for (int i = 0; i < fDes.getLevel(); i++) {
+            // Obj o = itObj.next();
+            // Struct s = itStr.next();
+            // if (!o.getType().assignableTo(s)) {
+            // // ne radi
+            // reportError("missmatch param: " + o.getType().getKind() + " " + s.getKind(),
+            // functCall);
+            // return;
+            // }
+            // }
+            // }
+            functCall.struct = fDes.getType();
+        } else {
+            reportError("not a function", functCall);
+        }
+    }
+
+    ArrayList<Struct> actParsList = new ArrayList<>();
+
+    public void visit(ActParsMultiple actPars) {
+        System.out.println("act pars multiple: " + actPars.getExpr().struct.getKind());
+        actParsList.add(actPars.getExpr().struct);
+    }
+
+    public void visit(ActParsSingle actPars) {
+        System.out.println("act pars single: " + actPars.getExpr().struct.getKind());
+        actParsList.add(actPars.getExpr().struct);
+    }
+
+    // FACTOR
+    public void visit(DesFactor df) {
+        df.struct = df.getDesignator().obj.getType();
+    }
+
+    public void visit(FunctCallFactor df) {
+        df.struct = df.getFunctCall().struct;
+    }
+
+    public void visit(ConstFactor df) {
+        df.struct = df.getConstValue().obj.getType();
+    }
+
+    public void visit(NewOperatorFactor df) {
+        df.struct = df.getType().struct;
+    }
+
+    public void visit(SubExprFactor df) {
+        df.struct = df.getExpr().struct;
+    }
+
+    // EXPR
+    public void visit(NoTernExpr expr) {
+        expr.struct = expr.getSmolExpr().struct;
+    }
+
+    public void visit(SmolExpr smExpr) {
+        if (smExpr.getTermAddopRepeat() instanceof TermAddopRepeatEmpty
+                || smExpr.getTerm().struct.compatibleWith(smExpr.getTermAddopRepeat().struct)) {
+            smExpr.struct = smExpr.getTerm().struct;
+        } else
+            reportError("not compatible", smExpr);
+    }
+
+    public void visit(Term term) {
+        if (term.getFactorMulopRepeat() instanceof FactorMulopRepeatEmpty
+                || term.getFactor().struct.compatibleWith(term.getFactorMulopRepeat().struct)) {
+            term.struct = term.getFactor().struct;
+        } else
+            reportError("not compatible", term);
+    }
+
+    public void visit(TermAddopRepeatExists t) {
+        if (t.getTermAddopRepeat() instanceof TermAddopRepeatEmpty
+                || t.getTerm().struct.compatibleWith(t.getTermAddopRepeat().struct)) {
+            t.struct = t.getTerm().struct;
+        } else
+            reportError("not compatible", t);
+    }
+
+    public void visit(FactorMulopRepeatExists t) {
+        if (t.getFactorMulopRepeat() instanceof FactorMulopRepeatEmpty
+                || t.getFactor().struct.compatibleWith(t.getFactorMulopRepeat().struct)) {
+            t.struct = t.getFactor().struct;
+        } else
+            reportError("not compatible", t);
+    }
+
 }

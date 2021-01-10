@@ -79,22 +79,21 @@ non terminal ClassDecl, ClassExtendsOptional, ClassMethodDecl;
 non terminal MethodDeclRepeat, MethodType, FormParsOptional, FormPars, FormParDecl, FormParRepeat;
 
 
-non terminal FunctCall;
 non terminal StatementRepeat, Statement;
-non terminal DesignatorStatement, Designator, SubDesignatorRepeat, ArrayBracketsOptional;
+non terminal DesignatorStatement, SubDesignatorRepeat, ArrayBracketsOptional;
 
 non terminal Assignment, Assignop, Mulop, Addop;
-non terminal MinusOptional, ExprOptional, Expr;
-non terminal TermAddopRepeat, Term, Factor, FactorMulopRepeat, ActPars, ActParsOptional;
+non terminal MinusOptional;
+non terminal ActPars, ActParsOptional;
 
 non terminal Condition, CondTermOrRepeat, CondTerm, CondFactorAndRepeat, CondFact, Relop, RelopExprOptional;
 
 non terminal ElseStatementOptional, PrintWidthOptional, CaseRepeat;
 
 non terminal SuperClass;
-non terminal SmolExpr;
 
 
+//===================
 
 
 //SYNTAX NON TERMINAL
@@ -103,8 +102,11 @@ non terminal rs.etf.pp1.symboltable.concepts.Struct Type;
 non terminal rs.etf.pp1.symboltable.concepts.Obj ProgramName;
 non terminal rs.etf.pp1.symboltable.concepts.Obj ConstValue, MethodDecl, MethodTypeAndName;
 
+non terminal rs.etf.pp1.symboltable.concepts.Obj Designator;
+non terminal rs.etf.pp1.symboltable.concepts.Struct Factor,FactorMulopRepeat, Term,TermAddopRepeat, Expr, SmolExpr, FunctCall;
 
 
+//===================
 
 //PRECEDENCE
 precedence left ELSE;
@@ -170,10 +172,10 @@ MethodTypeAndName ::= (MethodTypeAndName) MethodType:retType IDENT:name;
 //methodDeclPars != varDecl
 
 
-FormParsOptional ::= FormPars | /* empty */;
+FormParsOptional ::= (FormParsExists) FormPars | /* empty */;
 FormPars ::= FormParDecl FormParRepeat;
 
-FormParDecl ::= Type IDENT ArrayBracketsDeclOptional
+FormParDecl ::= (MethodLocalVar) Type:Type IDENT:Name ArrayBracketsDeclOptional
                 |
                 error
                 ;
@@ -200,7 +202,9 @@ Statement ::= DesignatorStatement SEMICOLN
             |
             (ContinueStatement) CONTINUE SEMICOLN
             |
-            (ReturnStatement) RETURN ExprOptional SEMICOLN
+            (ReturnExprStatement) RETURN Expr SEMICOLN
+            |
+            (ReturnNoExprStatement) RETURN SEMICOLN
             |
             (ReadStatement) READ LPAREN Designator RPAREN SEMICOLN
             |
@@ -219,14 +223,14 @@ DesignatorStatement ::= Assignment
                         Designator DECR
                         ;
 
-Assignment ::= Designator Assignop Expr
+Assignment ::= (AssignmentNoErr) Designator:Designator Assignop Expr:Expr
                 |
                 error
                 ;
 
-Designator ::= IDENT ArrayBracketsOptional SubDesignatorRepeat;
-SubDesignatorRepeat ::= SubDesignatorRepeat DOT IDENT ArrayBracketsOptional | /* empty */;
-ArrayBracketsOptional ::= (ArrayBracketsExists) LBRACKET Expr RBRACKET |(ArrayBracketsEmpty) /* empty */ ;
+Designator ::= (Designator) IDENT:Name ArrayBracketsOptional SubDesignatorRepeat;
+SubDesignatorRepeat ::= (SubDesignatorRepeatExists) SubDesignatorRepeat DOT IDENT:Name ArrayBracketsOptional | /* empty */;
+ArrayBracketsOptional ::= (ArrayBracketsExists) LBRACKET Expr:Index RBRACKET |(ArrayBracketsEmpty) /* empty */ ;
 
 /*operators*/
 Assignop ::= EQUAL;
@@ -239,45 +243,38 @@ MinusOptional ::= (MinusExists) SUB | (MinusEmpty) /* empty */;
 
 
 //TERNARNI old code
-//Expr::= MinusOptional Term TermAddopRepeat;
+//Expr::= MinusOptional Term:Term TermAddopRepeat;
 
 
 //new ziza ternarni
-Expr ::= (TernaryOperatorExpr) SmolExpr QMARK SmolExpr DDOTS SmolExpr
+Expr ::= (TernaryOperatorExpr) SmolExpr:TernConditionExpr QMARK SmolExpr:Truthy DDOTS SmolExpr:Falsey
         |
-        SmolExpr
+        (NoTernExpr) SmolExpr:SmolExpr
         ;
 
-SmolExpr ::=  MinusOptional Term TermAddopRepeat;
+SmolExpr ::=  (SmolExpr) MinusOptional Term:Term TermAddopRepeat:OtherTerms;
 
 
+TermAddopRepeat ::= (TermAddopRepeatExists) TermAddopRepeat:OtherTerms Addop Term | (TermAddopRepeatEmpty) /* empty */;
+Term ::= (Term) Factor:Factor FactorMulopRepeat:OtherFactors;
+FactorMulopRepeat ::= (FactorMulopRepeatExists) FactorMulopRepeat:OtherFactors Mulop Factor:Factor | (FactorMulopRepeatEmpty) /* empty */;
 
-ExprOptional ::= (ExprExists) Expr | (ExprEmpty) /* empty */;
-
-TermAddopRepeat ::= TermAddopRepeat Addop Term | /* empty */;
-Term ::= Factor FactorMulopRepeat;
-FactorMulopRepeat ::= FactorMulopRepeat Mulop Factor| /* empty */;
-
-Factor ::= Designator
+Factor ::=  (DesFactor) Designator:Designator
             |
-            FunctCall
+            (FunctCallFactor) FunctCall:FunctCall
             |
-            NUM
+            (ConstFactor) ConstValue:ConstValue
             |
-            CHAR
+            (NewOperatorFactor) NEW Type:Type ArrayBracketsOptional
             |
-            BOOLEAN
-            |
-            NEW Type:typeName ArrayBracketsOptional
-            |
-            LPAREN Expr RPAREN
+            (SubExprFactor) LPAREN Expr RPAREN
             ;
 
 
-FunctCall ::= Designator:func LPAREN ActParsOptional:param RPAREN;
+FunctCall ::= (FunctCall) Designator:func LPAREN ActParsOptional:Params RPAREN;
 
 ActParsOptional ::= (ActParsExists) ActPars | (ActParsEmpty) /* empty */;
-ActPars ::= ActPars COMMA Expr | Expr;
+ActPars ::= (ActParsMultiple) ActPars COMMA Expr:Expr | (ActParsSingle) Expr:Expr;
 
 
 Condition ::= CondTerm CondTermOrRepeat | (ErrCondition) error;
