@@ -1,7 +1,9 @@
 package compiler;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.Stack;
 
 import org.apache.log4j.Logger;
@@ -361,6 +363,7 @@ public class SemanticPass extends VisitorAdaptor {
     }
 
     // DOWHILE && SWITCH
+    Stack<Set<Integer>> usedCaseValuesStack = new Stack<>();
     int doWhileDepth = 0;
     int switchDepth = 0;
 
@@ -370,6 +373,7 @@ public class SemanticPass extends VisitorAdaptor {
 
     public void visit(StartSwitch t) {
         switchDepth++;
+        usedCaseValuesStack.push(new HashSet<Integer>());
     }
 
     public void visit(DoWhileStatement t) {
@@ -378,6 +382,7 @@ public class SemanticPass extends VisitorAdaptor {
 
     public void visit(SwitchStatement t) {
         switchDepth--;
+        usedCaseValuesStack.pop();
     }
 
     public void visit(ContinueStatement t) {
@@ -394,4 +399,10 @@ public class SemanticPass extends VisitorAdaptor {
             reportError("", t);
     }
 
+    public void visit(CaseRepeatExists t) {
+        if (!usedCaseValuesStack.peek().contains(t.getNum())) {
+            usedCaseValuesStack.peek().add(t.getNum());
+        } else
+            reportError("already used this num", t);
+    }
 }

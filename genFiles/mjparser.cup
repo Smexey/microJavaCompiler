@@ -294,7 +294,7 @@ RelopExprOptional ::= (RelopExprExists) Relop Expr:Expr |(RelopExprEmpty) /* emp
 
 
 ElseStatementOptional ::= (ElseStatementExists) ELSE Statement | (ElseStatementEmpty) /* empty */;
-CaseRepeat ::= (CaseRepeatExists) CaseRepeat CASE NUM DDOTS StatementRepeat | /* empty */;
+CaseRepeat ::= (CaseRepeatExists) CaseRepeat CASE NUM:Num DDOTS StatementRepeat | /* empty */;
 PrintWidthOptional ::= (PrintWidthExists) COMMA NUM | (PrintWidthEmpty) /* empty */;
 
 
