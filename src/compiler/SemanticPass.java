@@ -103,7 +103,13 @@ public class SemanticPass extends VisitorAdaptor {
     public void visit(ConstDecl constDecl) {
         if (Tab.find(constDecl.getName()) == Tab.noObj) {
             // check assignability
-            Tab.insert(Obj.Con, constDecl.getName(), constDecl.getType().struct);
+
+            Obj o = constDecl.getConstValue().obj;
+            Struct s = o.getType();
+            if (currDeclType.assignableTo(s)) {
+                Tab.insert(Obj.Con, constDecl.getName(), constDecl.getType().struct);
+            } else
+                reportError("const not assignable ", constDecl);
         } else {
             reportError("const redefinition ", constDecl);
         }
@@ -176,6 +182,7 @@ public class SemanticPass extends VisitorAdaptor {
         Struct type = null;
         if (meth.getMethodType() instanceof MethodTypeReturn) {
             type = ((MethodTypeReturn) meth.getMethodType()).getType().struct;
+            System.out.println("type je: " + type.getKind());
         } else if (meth.getMethodType() instanceof MethodTypeReturnVoid) {
             type = Tab.noType;
         }

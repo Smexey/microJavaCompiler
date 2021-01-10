@@ -16,8 +16,8 @@ program semanticTest
     //fakeType fakeTypeTest;
 
     //const test
-    const int constint1 = 2;
-    const int constint2 = 3, constint3 = 1 ,constint4 = 'a';
+    const int constint1 = 'a';
+    const int constint2 = 3, constint3 = 1 ,constint4 = true;
     const bool constbool = 1;
 
     int postConst;
@@ -27,6 +27,13 @@ program semanticTest
 
     
 {
+
+    int foo(int a)
+    
+    {
+
+        return 1;
+    }
 	void main()
         int methVara;
         int methVarb;	
