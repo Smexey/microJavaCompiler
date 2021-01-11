@@ -93,7 +93,7 @@ non terminal ElseStatementOptional, PrintWidthOptional, CaseRepeat;
 non terminal SuperClass;
 
 non terminal StartSwitch, StartDo, FunctDesignator;
-
+non terminal ClassName;
 
 //===================
 
@@ -157,11 +157,13 @@ ArrayBracketsDeclOptional ::= (ArrayBracketsDeclExists) LBRACKET RBRACKET | /* e
 VarDeclRepeat ::= VarDeclRepeat VarDecl | /* empty */;
 
 
-ClassDecl ::= CLASS IDENT ClassExtendsOptional LBRACE VarDeclRepeat ClassMethodDecl RBRACE;
+ClassDecl ::= (ClassDecl) ClassName ClassExtendsOptional LBRACE VarDeclRepeat ClassMethodDecl RBRACE;
 ClassExtendsOptional ::= (ClassExtendsExists) EXTENDS SuperClass | /* empty */ (ClassExtendsEmpty);
-ClassMethodDecl ::= LBRACE MethodDeclRepeat RBRACE;
+ClassMethodDecl ::= (ClassMethodDecl) LBRACE MethodDeclRepeat RBRACE;
 
-SuperClass::= IDENT | (ErrSuperClass) error;
+
+ClassName::= (ClassName) CLASS IDENT:Name;
+SuperClass::= (SuperClassNoErr) IDENT:Name | (ErrSuperClass) error;
 
 
 

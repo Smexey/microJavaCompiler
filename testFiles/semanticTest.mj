@@ -24,6 +24,25 @@ program semanticTest
 
     //clas test
 
+    class Cls1
+    {
+
+        {
+            void clsMeth1(int a,char b)
+            
+            {
+            }
+        }
+    }
+
+    class Cls2 extends Cls1
+    {
+
+        {
+
+        }
+    }
+
 
     
 {
@@ -45,12 +64,12 @@ program semanticTest
         int methVarb;
 	{
 
-        methVara = methVarb+int1?int1:int2;
+        //methVara = methVarb+int1?int1:int2;
 
 
 
-        methVara = new int;
-        intarr1 = new int[ord(c1)];
+        //methVara = new int;
+        //intarr1 = new int[ord(c1)];
 
 
         //methVara=5+2+true+false;
@@ -61,7 +80,6 @@ program semanticTest
 
 
         intarr1[2] ++;
-
 
         foo(foo2(true),'a');
 	}

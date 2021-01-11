@@ -162,9 +162,31 @@ public class SemanticPass extends VisitorAdaptor {
     }
 
     // CLASS
-    boolean insideClass = false;
+    Obj currentClass = null;
 
-i
+    public void visit(ClassName t) {
+        // napravi novi tip
+        currentClass = Tab.insert(Obj.Type, t.getName(), Tab.nullType);
+        Tab.openScope();
+    }
+
+    public void visit(ClassDecl t) {
+        Tab.chainLocalSymbols(currentClass);
+        Tab.closeScope();
+        currentClass = null;
+    }
+
+    public void visit(SuperClassNoErr t) {
+        Obj sup = Tab.find(t.getName());
+        if (sup != Tab.noObj) {
+            if (sup.getName() != currentClass.getName()) {
+                // BRAVO
+            } else
+                reportError("cant extend from self", t);
+        } else
+            reportError("no superclass found", t);
+    }
+
     // METHOD
     Obj currentMethod = null;
 
@@ -176,11 +198,13 @@ i
             type = ((MethodTypeReturn) meth.getMethodType()).getType().struct;
         } else if (meth.getMethodType() instanceof MethodTypeReturnVoid) {
             type = Tab.noType;
-
         }
         currentMethod = Tab.insert(Obj.Meth, meth.getName(), type);
 
         Tab.openScope();
+        if (currentClass != null) {
+            Tab.insert(Obj.Fld, "this", currentClass.getType());
+        }
         reportInfo("methodStart: ", meth);
     }
 
@@ -192,6 +216,7 @@ i
 
         Tab.chainLocalSymbols(currentMethod);
         Tab.closeScope();
+        currentMethod = null;
     }
 
     public void visit(ReturnExprStatement ret) {
@@ -229,7 +254,10 @@ i
     }
 
     public void visit(FormParsExists formPars) {
-        currentMethod.setLevel(Tab.currentScope().getnVars());
+        if (currentClass == null)
+            currentMethod.setLevel(Tab.currentScope().getnVars());
+        else
+            currentMethod.setLevel(Tab.currentScope().getnVars() - 1);
     }
 
     // STATEMENT
@@ -299,6 +327,12 @@ i
                 }
 
                 Iterator<Obj> itObj = fDes.getLocalSymbols().iterator();
+
+                if (fDes.getType() == Tab.nullType) {
+                    // klasa ima this implicitan
+                    itObj.next();
+                }
+
                 Iterator<Struct> itStr = actParsList.iterator();
                 // u levelu se cuva br formpars
                 System.out.println("level: " + fDes.getLevel());
@@ -355,6 +389,13 @@ i
                 df.struct.setElementType(df.getType().struct);
             } else
                 reportError("new array size mora biti inttype", df);
+        } else {
+            // mora biti klasnog tipa
+            Obj cls = Tab.find(df.getType().getTypeName());
+            if (cls.getType() != Tab.nullType) {
+                df.struct = cls.getType();
+            } else
+                reportError("cant new non class type", df);
         }
     }
 
@@ -379,6 +420,8 @@ i
             smExpr.struct = smExpr.getTerm().struct;
         } else
             reportError("not compatible", smExpr);
+
+        smExpr.struct = smExpr.getTerm().struct;
     }
 
     public void visit(Term term) {
@@ -387,6 +430,7 @@ i
             term.struct = term.getFactor().struct;
         } else
             reportError("not compatible", term);
+        term.struct = term.getFactor().struct;
     }
 
     public void visit(TermAddopRepeatExists t) {
@@ -395,6 +439,7 @@ i
             t.struct = t.getTerm().struct;
         } else
             reportError("not compatible", t);
+        t.struct = t.getTerm().struct;
     }
 
     public void visit(FactorMulopRepeatExists t) {
@@ -403,6 +448,7 @@ i
             t.struct = t.getFactor().struct;
         } else
             reportError("not compatible", t);
+        t.struct = t.getFactor().struct;
     }
 
     // DOWHILE && SWITCH && IF
