@@ -25,7 +25,7 @@ public class SemanticPass extends VisitorAdaptor {
 
     SemanticPass() {
         Tab.currentScope().addToLocals(new Obj(Obj.Type, "bool", boolType));
-        reportInfo("==================SEMANTICSTART==============", null);
+        reportInfo("==================SEMANTIC==============", null);
     }
 
     public void reportError(String message, SyntaxNode info) {
@@ -345,6 +345,15 @@ public class SemanticPass extends VisitorAdaptor {
 
     public void visit(NewOperatorFactor df) {
         df.struct = df.getType().struct;
+        // kopira tip
+        if (df.getArrayBracketsOptional() instanceof ArrayBracketsExists) {
+            ArrayBracketsExists arrBr = (ArrayBracketsExists) df.getArrayBracketsOptional();
+            if (arrBr.getExpr().struct == Tab.intType) {
+                df.struct = new Struct(Struct.Array);
+                df.struct.setElementType(df.getType().struct);
+            } else
+                reportError("new array size mora biti inttype", df);
+        }
     }
 
     public void visit(SubExprFactor df) {

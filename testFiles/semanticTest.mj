@@ -44,6 +44,9 @@ program semanticTest
         int methVara;
         int methVarb;
 	{
+        methVara = new int;
+        intarr1 = new int[ord(c1)];
+
 
         //methVara=5+2+true+false;
         methVarb = 1+foo2(false);
