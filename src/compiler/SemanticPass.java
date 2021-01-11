@@ -238,7 +238,12 @@ public class SemanticPass extends VisitorAdaptor {
             des.obj = obj;
             // ako postoje [] menja mu se tip u element niza
             if (des.getArrayBracketsOptional() instanceof ArrayBracketsExists) {
-                des.obj = new Obj(Obj.Elem, "", obj.getType().getElemType());
+                ArrayBracketsExists arrBrackets = (ArrayBracketsExists) des.getArrayBracketsOptional();
+                if (arrBrackets.getExpr().struct == Tab.intType) {
+                    des.obj = new Obj(Obj.Elem, "", obj.getType().getElemType());
+                } else
+                    reportError("index mora biti intType", des);
+
             }
         } else
             reportError("designator not declared ", des);
