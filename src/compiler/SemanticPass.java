@@ -207,6 +207,7 @@ public class SemanticPass extends VisitorAdaptor {
         if (currentMethod != null) {
             if (currentMethod.getType() == Tab.noType) {
                 // BRAVO
+
             } else
                 reportError("return type missmatch", ret);
         } else
@@ -364,6 +365,16 @@ public class SemanticPass extends VisitorAdaptor {
         expr.struct = expr.getSmolExpr().struct;
     }
 
+    public void visit(TernaryOperatorExpr expr) {
+        if (expr.getSmolExpr().struct == this.boolType) {
+            if (expr.getSmolExpr1().struct == expr.getSmolExpr2().struct) {
+                expr.struct = expr.getSmolExpr1().struct;
+            } else
+                reportError("different types for truthy and falsy", expr);
+        }
+        reportError("ternary bad condition", expr);
+    }
+
     public void visit(SmolExpr smExpr) {
         if (smExpr.getTermAddopRepeat() instanceof TermAddopRepeatEmpty
                 || smExpr.getTerm().struct.compatibleWith(smExpr.getTermAddopRepeat().struct)) {
@@ -438,14 +449,14 @@ public class SemanticPass extends VisitorAdaptor {
         if (doWhileDepth > 0) {
             // BRAVO
         } else
-            reportError("", t);
+            reportError("cant continue from here", t);
     }
 
     public void visit(BreakStatement t) {
         if (switchDepth > 0 || doWhileDepth > 0) {
             // BRAVO
         } else
-            reportError("", t);
+            reportError("cant break from here", t);
     }
 
     public void visit(CaseRepeatExists t) {
@@ -467,7 +478,6 @@ public class SemanticPass extends VisitorAdaptor {
     public void visit(ReadStatement t) {
         int kind = t.getDesignator().obj.getKind();
         if (kind == Obj.Var || kind == Obj.Fld || kind == Obj.Elem) {
-            // BRAVO AL ZAMALO
             kind = t.getDesignator().obj.getType().getKind();
             if (kind == Tab.charType.getKind() || kind == Tab.intType.getKind() || kind == this.boolType.getKind()) {
                 // BRAVO
