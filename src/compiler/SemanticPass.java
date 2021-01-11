@@ -162,8 +162,9 @@ public class SemanticPass extends VisitorAdaptor {
     }
 
     // CLASS
-    // TODO
+    boolean insideClass = false;
 
+i
     // METHOD
     Obj currentMethod = null;
 
@@ -366,13 +367,10 @@ public class SemanticPass extends VisitorAdaptor {
     }
 
     public void visit(TernaryOperatorExpr expr) {
-        if (expr.getSmolExpr().struct == this.boolType) {
-            if (expr.getSmolExpr1().struct == expr.getSmolExpr2().struct) {
-                expr.struct = expr.getSmolExpr1().struct;
-            } else
-                reportError("different types for truthy and falsy", expr);
-        }
-        reportError("ternary bad condition", expr);
+        if (expr.getSmolExpr1().struct == expr.getSmolExpr2().struct) {
+            expr.struct = expr.getSmolExpr1().struct;
+        } else
+            reportError("different types for truthy and falsy", expr);
     }
 
     public void visit(SmolExpr smExpr) {

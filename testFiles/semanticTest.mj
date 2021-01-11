@@ -44,6 +44,11 @@ program semanticTest
         int methVara;
         int methVarb;
 	{
+
+        methVara = methVarb+int1?int1:int2;
+
+
+
         methVara = new int;
         intarr1 = new int[ord(c1)];
 
