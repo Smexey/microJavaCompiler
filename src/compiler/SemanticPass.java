@@ -466,7 +466,8 @@ public class SemanticPass extends VisitorAdaptor {
     // CONDITION
     public void visit(ConditionNoErr t) {
         Struct s = t.getCondTerm().struct;
-        if (s == this.boolType && s == t.getCondTermOrRepeat().struct) {
+        if (s == this.boolType
+                && (s.compatibleWith(t.getCondTermOrRepeat().struct) || t.getCondTermOrRepeat().struct == null)) {
             t.struct = s;
         } else
             reportError("incompatible type for condition", t);
@@ -474,7 +475,8 @@ public class SemanticPass extends VisitorAdaptor {
 
     public void visit(CondTermOrRepeatExists t) {
         Struct s = t.getCondTerm().struct;
-        if (s == this.boolType && s == t.getCondTermOrRepeat().struct) {
+        if (s == this.boolType
+                && (s.compatibleWith(t.getCondTermOrRepeat().struct) || t.getCondTermOrRepeat().struct == null)) {
             t.struct = s;
         } else
             reportError("incompatible type for condition", t);
@@ -482,7 +484,8 @@ public class SemanticPass extends VisitorAdaptor {
 
     public void visit(CondTerm t) {
         Struct s = t.getCondFact().struct;
-        if (s == this.boolType && s == t.getCondFactorAndRepeat().struct) {
+        if (s == this.boolType
+                && (s.compatibleWith(t.getCondFactorAndRepeat().struct) || t.getCondFactorAndRepeat().struct == null)) {
             t.struct = s;
         } else
             reportError("incompatible type for condition", t);
@@ -504,12 +507,12 @@ public class SemanticPass extends VisitorAdaptor {
             } else
                 reportError("incompatible type for condition", t);
         }
-
     }
 
     public void visit(CondFactorAndRepeatExists t) {
         Struct s = t.getCondFact().struct;
-        if (s == this.boolType && s == t.getCondFactorAndRepeat().struct) {
+        if (s == this.boolType
+                && (s.compatibleWith(t.getCondFactorAndRepeat().struct) || t.getCondFactorAndRepeat().struct == null)) {
             t.struct = s;
         } else
             reportError("incompatible type for condition", t);
