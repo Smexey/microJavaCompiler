@@ -82,11 +82,11 @@ non terminal MethodDeclRepeat, MethodType, FormParsOptional, FormPars, FormParDe
 non terminal StatementRepeat, Statement;
 non terminal DesignatorStatement, SubDesignatorRepeat, ArrayBracketsOptional;
 
-non terminal  Assignop, Mulop, Addop;
+non terminal Assignop, Mulop, Addop;
 non terminal MinusOptional;
 non terminal ActPars, ActParsOptional;
 
-non terminal Condition, CondTermOrRepeat, CondTerm, CondFactorAndRepeat, CondFact, Relop, RelopExprOptional;
+non terminal Relop, RelopExprOptional;
 
 non terminal ElseStatementOptional, PrintWidthOptional, CaseRepeat;
 
@@ -107,6 +107,7 @@ non terminal rs.etf.pp1.symboltable.concepts.Obj ConstValue, MethodDecl, MethodT
 non terminal rs.etf.pp1.symboltable.concepts.Obj Designator;
 non terminal rs.etf.pp1.symboltable.concepts.Struct Factor,FactorMulopRepeat, Term, TermAddopRepeat, Expr, SmolExpr, FunctCall;
 non terminal rs.etf.pp1.symboltable.concepts.Struct Assignment;
+non terminal rs.etf.pp1.symboltable.concepts.Struct Condition, CondTerm, CondFact, CondTermOrRepeat, CondFactorAndRepeat;
 
 //===================
 
@@ -241,7 +242,6 @@ Assignop ::= EQUAL;
 Mulop ::= MUL | DIV | MOD;
 Addop ::= ADD | SUB;
 
-
 MinusOptional ::= (MinusExists) SUB | (MinusEmpty) /* empty */;
 
 
@@ -287,7 +287,7 @@ CondTermOrRepeat ::= (CondTermOrRepeatExists) CondTermOrRepeat:OtherCondTerms OR
 
 CondTerm ::= (CondTerm) CondFact:CondFact CondFactorAndRepeat:OtherCondFacts;
 CondFactorAndRepeat ::= (CondFactorAndRepeatExists) CondFactorAndRepeat:OtherCondFacts AND CondFact:CondFact | /* empty */;
-CondFact ::= Expr:Expr RelopExprOptional:OtherExpr;
+CondFact ::= (CondFact) Expr:Expr RelopExprOptional:OtherExpr;
 
 Relop ::= EQUALS | NEQUALS | GRT | GRTEQUAL | LESS | LESSEQUAL;
 RelopExprOptional ::= (RelopExprExists) Relop Expr:Expr |(RelopExprEmpty) /* empty */;

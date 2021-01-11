@@ -167,10 +167,9 @@ public class SemanticPass extends VisitorAdaptor {
     // METHOD
     Obj currentMethod = null;
 
-    boolean returnFound = false;
+    Struct returnFound = null;
 
     public void visit(MethodTypeAndName meth) {
-        returnFound = false;
         Struct type = null;
         if (meth.getMethodType() instanceof MethodTypeReturn) {
             type = ((MethodTypeReturn) meth.getMethodType()).getType().struct;
@@ -185,12 +184,33 @@ public class SemanticPass extends VisitorAdaptor {
     }
 
     public void visit(MethodDecl meth) {
-        if (!returnFound && currentMethod.getType() != Tab.noType) {
-            reportError("no return " + currentMethod.getType().getKind() + "", meth);
+        if (returnFound == null && currentMethod.getType() != Tab.noType) {
+            reportError("no return found" + currentMethod.getType().getKind() + "", meth);
         }
-        // cuvam curr method jer potpis metode je retType name(paramList)
+        returnFound = null;
+
         Tab.chainLocalSymbols(currentMethod);
         Tab.closeScope();
+    }
+
+    public void visit(ReturnExprStatement ret) {
+        if (currentMethod != null) {
+            if (ret.getExpr().struct == currentMethod.getType()) {
+                returnFound = ret.getExpr().struct;
+            } else
+                reportError("return type missmatch", ret);
+        } else
+            reportError("cant return when not in method", ret);
+    }
+
+    public void visit(ReturnNoExprStatement ret) {
+        if (currentMethod != null) {
+            if (currentMethod.getType() == Tab.noType) {
+                // BRAVO
+            } else
+                reportError("return type missmatch", ret);
+        } else
+            reportError("cant return when not in method", ret);
     }
 
     public void visit(FormParDeclNoErr var) {
@@ -362,7 +382,7 @@ public class SemanticPass extends VisitorAdaptor {
             reportError("not compatible", t);
     }
 
-    // DOWHILE && SWITCH
+    // DOWHILE && SWITCH && IF
     Stack<Set<Integer>> usedCaseValuesStack = new Stack<>();
     int doWhileDepth = 0;
     int switchDepth = 0;
@@ -378,11 +398,26 @@ public class SemanticPass extends VisitorAdaptor {
 
     public void visit(DoWhileStatement t) {
         doWhileDepth--;
+        if (t.getCondition().struct == this.boolType) {
+            // BRAVO
+        } else
+            reportError("dowhile has non boolean condition", t);
     }
 
     public void visit(SwitchStatement t) {
         switchDepth--;
         usedCaseValuesStack.pop();
+        if (t.getExpr().struct == Tab.intType) {
+            // BRAVO
+        } else
+            reportError("SwitchSTatement expr must be intType", t);
+    }
+
+    public void visit(IfStatement t) {
+        if (t.getCondition().struct == this.boolType) {
+            // BRAVO
+        } else
+            reportError("if has non boolean condition", t);
     }
 
     public void visit(ContinueStatement t) {
@@ -405,4 +440,79 @@ public class SemanticPass extends VisitorAdaptor {
         } else
             reportError("already used this num", t);
     }
+
+    // READ && PRINT
+    public void visit(PrintStatement t) {
+        int kind = t.getExpr().struct.getKind();
+        if (kind == Tab.charType.getKind() || kind == Tab.intType.getKind() || kind == this.boolType.getKind()) {
+            // BRAVO
+        } else
+            reportError("incompatible print type", t);
+    }
+
+    public void visit(ReadStatement t) {
+        int kind = t.getDesignator().obj.getKind();
+        if (kind == Obj.Var || kind == Obj.Fld || kind == Obj.Elem) {
+            // BRAVO AL ZAMALO
+            kind = t.getDesignator().obj.getType().getKind();
+            if (kind == Tab.charType.getKind() || kind == Tab.intType.getKind() || kind == this.boolType.getKind()) {
+                // BRAVO
+            } else
+                reportError("incompattible designator type for read", t);
+        } else
+            reportError("incompatible designator for read", t);
+    }
+
+    // CONDITION
+    public void visit(ConditionNoErr t) {
+        Struct s = t.getCondTerm().struct;
+        if (s == this.boolType && s == t.getCondTermOrRepeat().struct) {
+            t.struct = s;
+        } else
+            reportError("incompatible type for condition", t);
+    }
+
+    public void visit(CondTermOrRepeatExists t) {
+        Struct s = t.getCondTerm().struct;
+        if (s == this.boolType && s == t.getCondTermOrRepeat().struct) {
+            t.struct = s;
+        } else
+            reportError("incompatible type for condition", t);
+    }
+
+    public void visit(CondTerm t) {
+        Struct s = t.getCondFact().struct;
+        if (s == this.boolType && s == t.getCondFactorAndRepeat().struct) {
+            t.struct = s;
+        } else
+            reportError("incompatible type for condition", t);
+    }
+
+    public void visit(CondFact t) {
+        // poredjenja expr
+        Struct s = t.getExpr().struct;
+        if (s == this.boolType) {
+            // prosto je true jer je const?
+            t.struct = this.boolType;
+        } else {
+            if (t.getRelopExprOptional() instanceof RelopExprExists) {
+                RelopExprExists relExpr2 = (RelopExprExists) t.getRelopExprOptional();
+                if (relExpr2.getExpr().struct == s) {
+                    t.struct = this.boolType;
+                } else
+                    reportError("incompatible relation operands", t);
+            } else
+                reportError("incompatible type for condition", t);
+        }
+
+    }
+
+    public void visit(CondFactorAndRepeatExists t) {
+        Struct s = t.getCondFact().struct;
+        if (s == this.boolType && s == t.getCondFactorAndRepeat().struct) {
+            t.struct = s;
+        } else
+            reportError("incompatible type for condition", t);
+    }
+
 }

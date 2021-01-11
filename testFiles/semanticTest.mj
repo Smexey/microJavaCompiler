@@ -30,8 +30,9 @@ program semanticTest
 
     char foo(int param,char c)
     {
-        
-        return 1;
+        return 'a';
+        param = true+false;
+        return param;
     }
 
     int foo2(bool param1)
@@ -46,7 +47,7 @@ program semanticTest
 
         //methVara=5+2+true+false;
         methVarb = 1+foo2(false);
-
+            
 
 
         intarr1[2] ++;
