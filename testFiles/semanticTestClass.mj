@@ -1,4 +1,4 @@
-program semanticTest
+program semanticTestClass
 
     //int test
     bool bool1;
@@ -9,20 +9,22 @@ program semanticTest
     bool bool2,bool3;
 
     int intarr1[];
-    char charrarr0[];
-    char carr1[], carr2[];
 
     int fakeType;
-    //fakeType fakeTypeTest;
-
-    //const test
-    //const int constint1 = 'a';
-    //const int constint2 = 3, constint3 = 1 ,constint4 = true;
-    //const bool constbool = 1;
 
     int postConst;
 
     //clas test
+    class Cls0
+    {
+        int a1,a;
+        {
+            void setA(int a)
+            {
+                this.a = a;
+            }
+        }
+    }
 
     class Cls1
     {
@@ -37,14 +39,18 @@ program semanticTest
 
     class Cls2 extends Cls1
     {
+        Cls0 c0;
 
         {
-
+            void clsMeth2()
+                int c;
+            {
+            }
         }
     }
+    Cls1 x1,x2;
 
-
-    
+    Cls2 x3;
 {
 
     char foo(int param,char c)
@@ -64,22 +70,19 @@ program semanticTest
         int methVarb;
 	{
         
-        //methVara = methVarb+int1?int1:int2;
+        //intarr1 = new int[15];
+        //int1 = new int;
+
+        x1 = new Cls1;
+        x3 = new Cls2;
+        
+
+        x3.clsMeth1(1,'a');
+
+        int1 = x3.c0.a;
 
 
 
-        //methVara = new int;
-        //intarr1 = new int[ord(c1)];
-
-
-        //methVara=5+2+true+false;
-        methVarb = 1+foo2(false);
-
-        if(true)methVarb++;
-        if(methVarb > int1 && 1>int1 || 2<5)methVarb++;
-
-
-        intarr1[2] ++;
 
         foo(foo2(true),'a');
 	}

@@ -8,7 +8,9 @@ ovo je lose jer classpath ne bi smeo da ima cfg
 
 ## Semantika
 
+## PITATI JANKA
 
+VarDecl dal treba da ima currentclass?Obj.Fld: Obj.Var;
 
 
 

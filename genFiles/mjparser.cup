@@ -236,7 +236,7 @@ Assignment ::= (AssignmentNoErr) Designator:Designator Assignop Expr:Expr
                 ;
 
 Designator ::= (Designator) IDENT:Name ArrayBracketsOptional SubDesignatorRepeat;
-SubDesignatorRepeat ::= (SubDesignatorRepeatExists) SubDesignatorRepeat DOT IDENT:Name ArrayBracketsOptional | /* empty */;
+SubDesignatorRepeat ::= (SubDesignatorRepeatExists) DOT IDENT:Name ArrayBracketsOptional SubDesignatorRepeat | /* empty */;
 ArrayBracketsOptional ::= (ArrayBracketsExists) LBRACKET Expr:Index RBRACKET |(ArrayBracketsEmpty) /* empty */ ;
 
 /*operators*/

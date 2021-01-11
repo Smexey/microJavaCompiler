@@ -51,7 +51,7 @@ program test301
 		print(false ? bodovi + 20 : bodovi + 30);
 		//print(bodovi > 10 ? '+' : '-');
 
-		ternary ? ternarya : ternaryb + 10;
+		//ternary ? ternarya : ternaryb + 10;
 
 	}
 }

@@ -26,7 +26,8 @@ public class ParserTest {
         if (args.length > 2)
             sourceCode = new File(args[1]);
         else
-            sourceCode = new File("testFiles/semanticTest.mj");
+            sourceCode = new File("testFiles/test303.mj");
+        // semanticTestClass
 
         if (!sourceCode.exists()) {
             log.error("Source file [" + sourceCode.getAbsolutePath() + "] not found!");

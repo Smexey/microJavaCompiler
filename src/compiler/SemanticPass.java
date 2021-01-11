@@ -1,5 +1,6 @@
 package compiler;
 
+import java.nio.file.WatchEvent.Kind;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -67,12 +68,24 @@ public class SemanticPass extends VisitorAdaptor {
 
     public void visit(VarDeclNoErr varDecl) {
         if (Tab.find(varDecl.getName()) == Tab.noObj) {
+            Struct s = varDecl.getType().struct;
+
             if (arrayBracketsDecl) {
-                Tab.insert(Obj.Var, varDecl.getName(), new Struct(Struct.Array, varDecl.getType().struct));
+                s = new Struct(Struct.Array, varDecl.getType().struct);
                 arrayBracketsDecl = false;
-            } else {
-                Tab.insert(Obj.Var, varDecl.getName(), varDecl.getType().struct);
             }
+
+            Obj o = null;
+
+            if (currentClass != null) {
+                o = new Obj(Obj.Fld, varDecl.getName(), s);
+                currentClass.getType().getMembersTable().insertKey(o);
+            } else {
+                o = new Obj(Obj.Var, varDecl.getName(), s);
+            }
+
+            Tab.currentScope().addToLocals(o);
+
         } else {
             reportError("var redefinition ", varDecl);
         }
@@ -80,13 +93,24 @@ public class SemanticPass extends VisitorAdaptor {
 
     public void visit(VarDeclIdentRepeatDerived1 varDeclRep) {
         if (Tab.find(varDeclRep.getName()) == Tab.noObj) {
+            Struct s = currDeclType;
+
             if (arrayBracketsDecl) {
-                // array
-                Tab.insert(Obj.Var, varDeclRep.getName(), new Struct(Struct.Array, currDeclType));
+                s = new Struct(Struct.Array, currDeclType);
                 arrayBracketsDecl = false;
-            } else {
-                Tab.insert(Obj.Var, varDeclRep.getName(), currDeclType);
             }
+
+            Obj o = null;
+
+            if (currentClass != null) {
+                o = new Obj(Obj.Fld, varDeclRep.getName(), s);
+                currentClass.getType().getMembersTable().insertKey(o);
+            } else {
+                o = new Obj(Obj.Var, varDeclRep.getName(), s);
+            }
+
+            Tab.currentScope().addToLocals(o);
+
         } else {
             reportError("var redefinition ", varDeclRep);
         }
@@ -166,13 +190,26 @@ public class SemanticPass extends VisitorAdaptor {
 
     public void visit(ClassName t) {
         // napravi novi tip
-        currentClass = Tab.insert(Obj.Type, t.getName(), Tab.nullType);
+        currentClass = Tab.insert(Obj.Type, t.getName(), new Struct(Struct.Class));
         Tab.openScope();
     }
 
     public void visit(ClassDecl t) {
-        Tab.chainLocalSymbols(currentClass);
+        // POPUNIM METODAMA NATKLASE AKO FALE
+        if (currentClass.getType().getElemType() != null) {
+            Iterator<Obj> it = currentClass.getType().getElemType().getMembers().iterator();
+            while (it.hasNext()) {
+                Obj o = it.next();
+                // ako u trenutnom scopeu nema te metode
+                if (o.getKind() == Obj.Meth && Tab.find(o.getName()) == Tab.noObj) {
+                    Tab.currentScope().addToLocals(o);
+                }
+            }
+        }
+
+        Tab.chainLocalSymbols(currentClass.getType());
         Tab.closeScope();
+
         currentClass = null;
     }
 
@@ -180,7 +217,17 @@ public class SemanticPass extends VisitorAdaptor {
         Obj sup = Tab.find(t.getName());
         if (sup != Tab.noObj) {
             if (sup.getName() != currentClass.getName()) {
-                // BRAVO
+                // stavim da extenduje superklass
+                currentClass.getType().setElementType(sup.getType());
+
+                // kopiram fieldove
+                Iterator<Obj> it = sup.getType().getMembers().iterator();
+                while (it.hasNext()) {
+                    Obj o = it.next();
+                    if (o.getKind() == Obj.Fld)
+                        Tab.insert(Obj.Fld, o.getName(), o.getType());
+                }
+
             } else
                 reportError("cant extend from self", t);
         } else
@@ -203,7 +250,7 @@ public class SemanticPass extends VisitorAdaptor {
 
         Tab.openScope();
         if (currentClass != null) {
-            Tab.insert(Obj.Fld, "this", currentClass.getType());
+            Tab.insert(Obj.Var, "this", currentClass.getType());
         }
         reportInfo("methodStart: ", meth);
     }
@@ -222,11 +269,13 @@ public class SemanticPass extends VisitorAdaptor {
     public void visit(ReturnExprStatement ret) {
         if (currentMethod != null) {
             if (ret.getExpr().struct == currentMethod.getType()) {
-                returnFound = ret.getExpr().struct;
+
             } else
                 reportError("return type missmatch", ret);
         } else
             reportError("cant return when not in method", ret);
+
+        returnFound = ret.getExpr().struct;
     }
 
     public void visit(ReturnNoExprStatement ret) {
@@ -241,7 +290,8 @@ public class SemanticPass extends VisitorAdaptor {
     }
 
     public void visit(FormParDeclNoErr var) {
-        if (Tab.find(var.getName()) == Tab.noObj) {
+        Obj v = Tab.find(var.getName());
+        if (v == Tab.noObj || v.getKind() == Obj.Fld) {
             if (arrayBracketsDecl) {
                 Tab.insert(Obj.Var, var.getName(), new Struct(Struct.Array, var.getType().struct));
                 arrayBracketsDecl = false;
@@ -249,7 +299,7 @@ public class SemanticPass extends VisitorAdaptor {
                 Tab.insert(Obj.Var, var.getName(), var.getType().struct);
             }
         } else {
-            reportError("var redefinition ", var);
+            reportError("var redefinition formpar", var);
         }
     }
 
@@ -264,30 +314,86 @@ public class SemanticPass extends VisitorAdaptor {
     // DESIGNATOR
     public void visit(Designator des) {
         Obj obj = Tab.find(des.getName());
+
+        if (obj == Tab.noObj && currentClass != null) {
+            Struct s = currentClass.getType();
+            while (obj == Tab.noObj && s != null) {
+                obj = s.getMembersTable().searchKey(des.getName());
+                if (obj == null)
+                    obj = Tab.noObj;
+                s = s.getElemType();
+            }
+        }
         if (obj != Tab.noObj) {
-            des.obj = obj;
+
             // ako postoje [] menja mu se tip u element niza
             if (des.getArrayBracketsOptional() instanceof ArrayBracketsExists) {
                 ArrayBracketsExists arrBrackets = (ArrayBracketsExists) des.getArrayBracketsOptional();
                 if (arrBrackets.getExpr().struct == Tab.intType) {
-                    des.obj = new Obj(Obj.Elem, "", obj.getType().getElemType());
+                    obj = new Obj(Obj.Elem, "", obj.getType().getElemType());
                 } else
                     reportError("index mora biti intType", des);
-
             }
+
+            SubDesignatorRepeat rep = des.getSubDesignatorRepeat();
+
+            while (rep instanceof SubDesignatorRepeatExists) {
+                SubDesignatorRepeatExists curr = (SubDesignatorRepeatExists) rep;
+
+                Struct s = obj.getType();
+                boolean found = false;
+                while (s != null) {
+                    Obj member = s.getMembersTable().searchKey(curr.getName());
+                    // u definiciji klase smo
+
+                    if (member != null) {
+                        found = true;
+
+                        obj = member;
+                        break;
+                    }
+                    s = s.getElemType();
+                }
+                if (!found)
+                    reportError("no such field: " + curr.getName(), curr);
+
+                rep = curr.getSubDesignatorRepeat();
+            }
+
         } else
-            reportError("designator not declared ", des);
+            reportError("designator not declared in scope", des);
+
+        des.obj = obj;
     }
 
     public void visit(AssignmentNoErr as) {
-        if (as.getExpr().struct.assignableTo(as.getDesignator().obj.getType())) {
-            int kind = as.getDesignator().obj.getKind();
-            if (kind == Obj.Var || kind == Obj.Fld || kind == Obj.Elem) {
-                as.struct = as.getDesignator().obj.getType();
+        if (as.getExpr().struct.getKind() == Struct.Class) {
+            // check every supercls
+            Struct s = as.getExpr().struct;
+            boolean found = false;
+            while (s != null) {
+                if (s.assignableTo(as.getDesignator().obj.getType())) {
+                    found = true;
+                    break;
+                }
+
+                s = s.getElemType();
+            }
+            if (!found)
+                reportError("not assignable to any superclass", as);
+        }
+
+        else {
+            if (as.getExpr().struct.assignableTo(as.getDesignator().obj.getType())) {
+                int kind = as.getDesignator().obj.getKind();
+                if (kind == Obj.Var || kind == Obj.Fld || kind == Obj.Elem) {
+
+                } else
+                    reportError("not assignable to that desigantor", as);
             } else
-                reportError("not assignable to that desigantor", as);
-        } else
-            reportError("not assignable ", as);
+                reportError("not assignable ", as);
+        }
+        as.struct = as.getDesignator().obj.getType();
     }
 
     public void visit(DesignatorStatementIncrement as) {
@@ -328,21 +434,37 @@ public class SemanticPass extends VisitorAdaptor {
 
                 Iterator<Obj> itObj = fDes.getLocalSymbols().iterator();
 
-                if (fDes.getType() == Tab.nullType) {
-                    // klasa ima this implicitan
-                    itObj.next();
-                }
-
                 Iterator<Struct> itStr = actParsList.iterator();
                 // u levelu se cuva br formpars
                 System.out.println("level: " + fDes.getLevel());
                 for (int i = 0; i < fDes.getLevel(); i++) {
                     Obj o = itObj.next();
+
+                    // skip ako je this iz klasne metode
+                    // ovo ne radi za metodu koja ima prvi parametar klasnog tipa imena this
+                    if (o.getName() == "this" && o.getType().getKind() == Struct.Class && i == 0)
+                        continue;
+
                     Struct s = itStr.next();
-                    if (!o.getType().assignableTo(s)) {
-                        // ne radi
-                        reportError("missmatch param: " + o.getType().getKind() + " " + s.getKind(), functCall);
-                        return;
+                    if (o.getType().getKind() == Struct.Class) {
+                        // check every supercls
+                        Struct spr = o.getType();
+                        boolean found = false;
+                        while (spr != null) {
+                            if (spr.assignableTo(s)) {
+                                found = true;
+                                break;
+                            }
+                            s = s.getElemType();
+                        }
+                        if (!found)
+                            reportError("missmatch param to any superclass" + o.getType().getKind() + " " + s.getKind(),
+                                    functCall);
+                    } else {
+                        // neklasni tip
+                        if (!o.getType().assignableTo(s)) {
+                            reportError("missmatch param: " + o.getType().getKind() + " " + s.getKind(), functCall);
+                        }
                     }
                 }
             }
@@ -392,10 +514,12 @@ public class SemanticPass extends VisitorAdaptor {
         } else {
             // mora biti klasnog tipa
             Obj cls = Tab.find(df.getType().getTypeName());
-            if (cls.getType() != Tab.nullType) {
-                df.struct = cls.getType();
+
+            if (cls.getType().getKind() == Struct.Class) {
+                // BRAVO
             } else
                 reportError("cant new non class type", df);
+            df.struct = cls.getType();
         }
     }
 
@@ -409,25 +533,25 @@ public class SemanticPass extends VisitorAdaptor {
 
     public void visit(TernaryOperatorExpr expr) {
         if (expr.getSmolExpr1().struct == expr.getSmolExpr2().struct) {
-            expr.struct = expr.getSmolExpr1().struct;
+
         } else
             reportError("different types for truthy and falsy", expr);
+        expr.struct = expr.getSmolExpr1().struct;
     }
 
     public void visit(SmolExpr smExpr) {
         if (smExpr.getTermAddopRepeat() instanceof TermAddopRepeatEmpty
                 || smExpr.getTerm().struct.compatibleWith(smExpr.getTermAddopRepeat().struct)) {
-            smExpr.struct = smExpr.getTerm().struct;
+            // BRAVO
         } else
             reportError("not compatible", smExpr);
-
         smExpr.struct = smExpr.getTerm().struct;
     }
 
     public void visit(Term term) {
         if (term.getFactorMulopRepeat() instanceof FactorMulopRepeatEmpty
                 || term.getFactor().struct.compatibleWith(term.getFactorMulopRepeat().struct)) {
-            term.struct = term.getFactor().struct;
+            // BRAVO
         } else
             reportError("not compatible", term);
         term.struct = term.getFactor().struct;
@@ -436,7 +560,7 @@ public class SemanticPass extends VisitorAdaptor {
     public void visit(TermAddopRepeatExists t) {
         if (t.getTermAddopRepeat() instanceof TermAddopRepeatEmpty
                 || t.getTerm().struct.compatibleWith(t.getTermAddopRepeat().struct)) {
-            t.struct = t.getTerm().struct;
+            // BRAVO
         } else
             reportError("not compatible", t);
         t.struct = t.getTerm().struct;
@@ -445,7 +569,7 @@ public class SemanticPass extends VisitorAdaptor {
     public void visit(FactorMulopRepeatExists t) {
         if (t.getFactorMulopRepeat() instanceof FactorMulopRepeatEmpty
                 || t.getFactor().struct.compatibleWith(t.getFactorMulopRepeat().struct)) {
-            t.struct = t.getFactor().struct;
+            // BRAVO
         } else
             reportError("not compatible", t);
         t.struct = t.getFactor().struct;
@@ -536,27 +660,30 @@ public class SemanticPass extends VisitorAdaptor {
         Struct s = t.getCondTerm().struct;
         if (s == this.boolType
                 && (s.compatibleWith(t.getCondTermOrRepeat().struct) || t.getCondTermOrRepeat().struct == null)) {
-            t.struct = s;
+            // BRAVO
         } else
             reportError("incompatible type for condition", t);
+        t.struct = s;
     }
 
     public void visit(CondTermOrRepeatExists t) {
         Struct s = t.getCondTerm().struct;
         if (s == this.boolType
                 && (s.compatibleWith(t.getCondTermOrRepeat().struct) || t.getCondTermOrRepeat().struct == null)) {
-            t.struct = s;
+            // BRAVO
         } else
             reportError("incompatible type for condition", t);
+        t.struct = s;
     }
 
     public void visit(CondTerm t) {
         Struct s = t.getCondFact().struct;
         if (s == this.boolType
                 && (s.compatibleWith(t.getCondFactorAndRepeat().struct) || t.getCondFactorAndRepeat().struct == null)) {
-            t.struct = s;
+            // BRAVO
         } else
             reportError("incompatible type for condition", t);
+        t.struct = s;
     }
 
     public void visit(CondFact t) {
@@ -564,26 +691,28 @@ public class SemanticPass extends VisitorAdaptor {
         Struct s = t.getExpr().struct;
         if (s == this.boolType) {
             // prosto je true jer je const?
-            t.struct = this.boolType;
+            // t.struct = this.boolType;
         } else {
             if (t.getRelopExprOptional() instanceof RelopExprExists) {
                 RelopExprExists relExpr2 = (RelopExprExists) t.getRelopExprOptional();
                 if (relExpr2.getExpr().struct == s) {
-                    t.struct = this.boolType;
+                    // t.struct = this.boolType;
                 } else
                     reportError("incompatible relation operands", t);
             } else
                 reportError("incompatible type for condition", t);
         }
+        t.struct = this.boolType;
     }
 
     public void visit(CondFactorAndRepeatExists t) {
         Struct s = t.getCondFact().struct;
         if (s == this.boolType
                 && (s.compatibleWith(t.getCondFactorAndRepeat().struct) || t.getCondFactorAndRepeat().struct == null)) {
-            t.struct = s;
+            // BRAVO
         } else
             reportError("incompatible type for condition", t);
+        t.struct = s;
     }
 
 }

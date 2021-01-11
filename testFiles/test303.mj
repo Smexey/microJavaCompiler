@@ -25,7 +25,11 @@ class Sfera extends Predmet
 	 int r;
 	{
 		 void postaviTezinu(int tezina) {this.tezina = tezina; vrsta = 's';}
-		 void postaviPoluprecnik(int r) {this.r = r; postaviVrstu('s');}
+		 void postaviPoluprecnik(int r) {
+			this.r = r; 
+			postaviVrstu('s'); 
+			postaviTezinu(5);
+		 }
 		 int zapremina()
 			int z;
 		{
