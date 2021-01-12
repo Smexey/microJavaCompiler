@@ -1,20 +1,29 @@
 program semanticTestClass
 
-    //int test
+
+    const Tp t = false;       
+    const int c1 = 1;        
+    const bool c2 = 'b';
+
+    
     bool bool1;
-    int int1;
     
     char c1,c2,c3;
-    int int2,int3;
-    bool bool2,bool3;
-
-    int intarr1[];
+    int int1,int2,int3,intarr1[];
 
     int fakeType;
+    fakeType fakeTypeVar;
 
-    int postConst;
+    double dbl1;
 
-    //clas test
+
+    class ExtendsGarbage extends c1
+    {
+        {
+            
+        }
+    }
+
     class Cls0
     {
         int a1,a;
@@ -52,6 +61,7 @@ program semanticTestClass
 
     Cls2 x3;
 {
+    double errorFunction(string s) float f; {}
 
     char foo(int param,char c)
     {
@@ -65,26 +75,50 @@ program semanticTestClass
         return 2;
     }
 
+    int f(int x){
+        return x;
+    }
+
 	void main(int formParb, int formPara)
         int methVara;
-        int methVarb;
+        char methChar;
+        Cls1 cls1Inst;
+        Cls1 cls1Arr[];
 	{
         
-        //intarr1 = new int[15];
-        //int1 = new int;
+        intarr1 = new int[15];
+        intarr1 = new char[5];
+        int1 = new int;
+
+        int1 = -int1 * (int1 + 3);
+        int1 = -methChar * (int1 + 3);
+
+        int1 = int1 - -int1;
 
         x1 = new Cls1;
         x3 = new Cls2;
+
         
-
         x3.clsMeth1(1,'a');
-
+        cls1Arr[2].clsMeth1(1,'a');
         int1 = x3.c0.a;
 
+        switch(int1){
+        	case 1: break;
+        	case 2: break;
+        	case 1: continue;
+        }
 
+        do{
+            continue;
+        }while(int1<=int1);
 
+        continue;
 
         foo(foo2(true),'a');
+
+        f(f(f(f(int1))));
+        
 	}
 }
 

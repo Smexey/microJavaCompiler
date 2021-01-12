@@ -1,0 +1,120 @@
+// test za semanticke greske
+
+program MJProgram
+
+    const char c1 = 'a';
+    const T c2 = false;       
+    const int c1 = 1;        
+    const bool c2 = 'b';
+
+    int v1, v1, v2[];
+    //double v3;
+    //v1 prom;         
+
+	//class A { int v1; 
+    //double v2;
+    //}
+	//class B extends v1{}
+	//class B extends A{
+	//	{
+	//		void m1(){}
+	//		double m2(){}
+	//	}
+	//} 
+{
+	void f1(int p1) int p1; {}
+	
+	void c1(){}
+	
+	double f2(string p1) float l1; {}
+	
+	void f3(int p1, int p2){
+        return p1 * p2;
+    }
+    
+    int f4(){}
+    
+    char f5(int p1){
+        return p1 + 5;
+    }
+    
+    int f6(char p1[]){
+        return p1[0];
+    }
+    
+    void main()
+    A a;
+    B b;
+    {
+        v1 = v2;
+        v2 = c1;
+        c1 = v1;
+        c1 = v2;
+        v1 = new char[5];
+        v1 = -v2 * (v1 + 3);
+		v1 = v2[c1];
+		v2 = v1[c1];
+        v1 = 'a';
+        v1 = true;
+        v2 = 0;
+        v2 = 'a';
+        v2 = false;
+        c1 = 'a';
+        c1 = true;
+        c1 = a > 0 || b < 2 ? v1 / 3 : v2 % 2; 
+        a = new int;
+        b = new char[9];
+        a = v1;
+        a = c1;
+        b = v2;
+        
+        b++;
+        v2--;
+        
+        v1.m1();
+ 		a.m1();
+ 		b.m1(2);
+ 		
+		f1();
+		f1(true);
+		f3(1);
+		f3('a', false);
+		f6(f5(f4(0)));
+		v1();
+		v2[c1]();
+
+		chr();
+		chr(c1);
+		ord();
+		ord(v2);
+		len();
+		len(v1);
+		
+        if (v1) {}
+        if (v2 == c1) {}
+        if (c1 && v2 < 0) {}
+        if (a > a) {}
+        if (b <= a) {}
+        
+        //do {} while(a == b || c1);
+        
+        //switch(c1){
+        //}
+        
+        //switch(v1){
+        //	case 1: break;
+        //	case 2: break;
+        //	case 1: continue;
+        //}
+        
+        //break;
+        
+        //continue;
+        
+		//read(a);
+		
+		//print(v2);
+		//print(b, 2);
+    }
+    
+}

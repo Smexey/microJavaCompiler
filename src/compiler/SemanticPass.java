@@ -215,7 +215,7 @@ public class SemanticPass extends VisitorAdaptor {
 
     public void visit(SuperClassNoErr t) {
         Obj sup = Tab.find(t.getName());
-        if (sup != Tab.noObj) {
+        if (sup != Tab.noObj && sup.getType().getKind() == Struct.Class) {
             if (sup.getName() != currentClass.getName()) {
                 // stavim da extenduje superklass
                 currentClass.getType().setElementType(sup.getType());
