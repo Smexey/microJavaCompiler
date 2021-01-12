@@ -55,6 +55,11 @@ program semanticTestClass
                 int c;
             {
             }
+
+            void setc0(Cls0 newC0)
+            {
+                this.c0 = newC0;
+            }
         }
     }
     Cls1 x1,x2;
@@ -103,6 +108,7 @@ program semanticTestClass
         Cls1 cls1Inst;
         Cls1 cls1Arr[];
         Cls3 cls3Inst;
+        Cls0 c0;
 	{
         
         intarr1 = new int[15];
@@ -143,6 +149,8 @@ program semanticTestClass
 
 
         cls3Inst.nothing.clsMeth1(1,'a');
+
+        cls3Inst.setc0(c0);
 	}
 }
 
