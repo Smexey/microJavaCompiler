@@ -32,7 +32,7 @@ public class SemanticPass extends VisitorAdaptor {
 
     public void reportError(String message, SyntaxNode info) {
         errorDetected = true;
-        StringBuilder msg = new StringBuilder("Semanticka greska ");
+        StringBuilder msg = new StringBuilder("Semantic err: ");
         msg.append(message);
         int line = (info == null) ? 0 : info.getLine();
         if (line != 0)
@@ -60,12 +60,6 @@ public class SemanticPass extends VisitorAdaptor {
     }
 
     // VAR
-    boolean arrayBracketsDecl = false;
-
-    public void visit(ArrayBracketsDeclExists arBrDeclExists) {
-        arrayBracketsDecl = true;
-    }
-
     Struct currDeclType = null;
 
     public void visit(ConstVarClassDecl varDecl) {
@@ -73,7 +67,7 @@ public class SemanticPass extends VisitorAdaptor {
         currDeclType = null;
     }
 
-    private boolean insertVar(Struct s, String name) {
+    private boolean insertVar(Struct s, String name, boolean arrayBracketsDecl) {
         boolean ret = false;
         Obj o = null;
         if (Tab.find(name) == Tab.noObj) {
@@ -97,12 +91,14 @@ public class SemanticPass extends VisitorAdaptor {
     }
 
     public void visit(VarDeclNoErr varDecl) {
-        if (!insertVar(varDecl.getType().struct, varDecl.getName()))
+        if (!insertVar(varDecl.getType().struct, varDecl.getName(),
+                varDecl.getArrayBracketsDeclOptional() instanceof ArrayBracketsDeclExists))
             reportError("var redefinition ", varDecl);
     }
 
-    public void visit(VarDeclIdentRepeatDerived1 varDeclRep) {
-        if (!insertVar(currDeclType, varDeclRep.getName()))
+    public void visit(VarDeclIdentRepeatNoErr varDeclRep) {
+        if (!insertVar(currDeclType, varDeclRep.getName(),
+                varDeclRep.getArrayBracketsDeclOptional() instanceof ArrayBracketsDeclExists))
             reportError("var redefinition ", varDeclRep);
     }
 
@@ -275,9 +271,8 @@ public class SemanticPass extends VisitorAdaptor {
     public void visit(FormParDeclNoErr var) {
         Obj v = Tab.find(var.getName());
         if (v == Tab.noObj || v.getKind() == Obj.Fld) {
-            if (arrayBracketsDecl) {
+            if (var.getArrayBracketsDeclOptional() instanceof ArrayBracketsDeclExists) {
                 Tab.insert(Obj.Var, var.getName(), new Struct(Struct.Array, var.getType().struct));
-                arrayBracketsDecl = false;
             } else {
                 Tab.insert(Obj.Var, var.getName(), var.getType().struct);
             }
@@ -332,7 +327,14 @@ public class SemanticPass extends VisitorAdaptor {
                     if (member != null) {
                         found = true;
 
-                        obj = member;
+                        // if array
+                        if (curr.getArrayBracketsOptional() instanceof ArrayBracketsExists) {
+                            // obj = member.getType().getElemType();
+                            obj = member;
+                            obj = new Obj(Obj.Var, "", member.getType().getElemType());
+                        } else {
+                            obj = member;
+                        }
                         break;
                     }
                     s = s.getElemType();
@@ -642,7 +644,7 @@ public class SemanticPass extends VisitorAdaptor {
             // ako je struct null onda je instanceof empty
             // BRAVO
         } else
-            reportError("incompatible type for condition", t);
+            reportError("incompatible type for condition1", t);
         t.struct = s;
     }
 
@@ -653,7 +655,7 @@ public class SemanticPass extends VisitorAdaptor {
             // ako je struct null onda je instanceof empty
             // BRAVO
         } else
-            reportError("incompatible type for condition", t);
+            reportError("incompatible type for condition2", t);
         t.struct = s;
     }
 
@@ -664,7 +666,7 @@ public class SemanticPass extends VisitorAdaptor {
             // ako je struct null onda je instanceof empty
             // BRAVO
         } else
-            reportError("incompatible type for condition", t);
+            reportError("incompatible type for condition3", t);
         t.struct = s;
     }
 
@@ -678,8 +680,10 @@ public class SemanticPass extends VisitorAdaptor {
                 // BRAVO
             } else
                 reportError("incompatible relation operands", t);
-        } else
-            reportError("incompatible type for condition", t);
+        } else {
+            if (s != this.boolType)
+                reportError("incompatible type for condition4", t);
+        }
 
         t.struct = this.boolType;
     }
@@ -691,7 +695,7 @@ public class SemanticPass extends VisitorAdaptor {
             // ako je struct null onda je instanceof empty
             // BRAVO
         } else
-            reportError("incompatible type for condition", t);
+            reportError("incompatible type for condition5", t);
         t.struct = s;
     }
 }

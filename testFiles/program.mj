@@ -35,9 +35,9 @@ Table val;
 
 		read(x);
 		
-		aasdfasasf = -size;
+		//aasdfasasf = -size;
 
-		foo(x,y);
+		//foo(x,y);
 
 		do{
 			if(x <= 0) break;
@@ -47,7 +47,7 @@ Table val;
 			}
 			else if (-size < x && x < 0)
 			{
-				val.putn(val.getn(‐x)+1);
+				val.putn(val.getn(-x)+1);
 			}
 			read(x);
 		}while(true);

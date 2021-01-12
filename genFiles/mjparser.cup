@@ -145,7 +145,7 @@ VarDecl ::= (VarDeclNoErr) Type:Type IDENT:Name ArrayBracketsDeclOptional VarDec
             error SEMICOLN
             ;
 
-VarDeclIdentRepeat ::=  VarDeclIdentRepeat COMMA IDENT:Name ArrayBracketsDeclOptional 
+VarDeclIdentRepeat ::=  (VarDeclIdentRepeatNoErr) VarDeclIdentRepeat COMMA IDENT:Name ArrayBracketsDeclOptional 
                         |
                         error COMMA
                         |
