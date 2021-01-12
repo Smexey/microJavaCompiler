@@ -33,14 +33,12 @@ public class Log4JUtils {
 		FileAppender fAppender = (FileAppender) appender;
 
 		String logFileName = fAppender.getFile();
-		logFileName = logFileName.substring(0, logFileName.lastIndexOf('.')) + "-test.log";
 
 		File logFile = new File(logFileName);
-		File renamedFile = new File(logFile.getAbsoluteFile() + "." + System.currentTimeMillis());
+		File renamedFile = new File(logFile.getAbsolutePath().substring(0) + System.currentTimeMillis() + ".log");
 
 		if (logFile.exists()) {
-			if (!logFile.renameTo(renamedFile))
-				System.err.println("Could not rename log file!");
+			logFile = renamedFile;
 		}
 
 		fAppender.setFile(logFile.getAbsolutePath());

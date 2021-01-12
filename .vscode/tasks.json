@@ -50,7 +50,8 @@
             "command": "rm",
             "args": [
                 "-rf",
-                "${workspaceFolder}/logs/*"
+                "${workspaceFolder}/logs/*.log",
+                "${workspaceFolder}/logs/std/*",
             ],
             "presentation": {
                 "echo": true,

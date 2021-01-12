@@ -13,7 +13,7 @@ import rs.etf.pp1.symboltable.Tab;
 import util.DumpSymbolTableVisitorExt;
 import util.Log4JUtils;
 
-public class ParserTest {
+public class Test {
 
     static {
         DOMConfigurator.configure(Log4JUtils.instance().findLoggerConfigFile());
@@ -21,12 +21,12 @@ public class ParserTest {
     }
 
     public static void main(String[] args) throws Exception {
-        Logger log = Logger.getLogger(ParserTest.class);
+        Logger log = Logger.getLogger(Test.class);
         File sourceCode;
-        if (args.length > 2)
-            sourceCode = new File(args[1]);
+        if (args.length > 0)
+            sourceCode = new File(args[0]);
         else
-            sourceCode = new File("testFiles/prg.mj");
+            sourceCode = new File("testFiles/codeTest.mj");
         // semanticTestClass
 
         if (!sourceCode.exists()) {

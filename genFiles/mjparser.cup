@@ -249,10 +249,6 @@ MinusOptional ::= (MinusExists) SUB | (MinusEmpty) /* empty */;
 
 
 
-//TERNARNI old code
-//Expr::= MinusOptional Term:Term TermAddopRepeat;
-
-
 //new ziza ternarni
 Expr ::= (TernaryOperatorExpr) SmolExpr:TernConditionExpr QMARK SmolExpr:Truthy DDOTS SmolExpr:Falsey
         |
