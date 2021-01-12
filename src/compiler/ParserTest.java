@@ -26,7 +26,7 @@ public class ParserTest {
         if (args.length > 2)
             sourceCode = new File(args[1]);
         else
-            sourceCode = new File("testFiles/semanticTestClass.mj");
+            sourceCode = new File("testFiles/semanticTest.mj");
         // semanticTestClass
 
         if (!sourceCode.exists()) {

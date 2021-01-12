@@ -112,6 +112,11 @@ program semanticTestClass
 	{
         
         intarr1 = new int[15];
+
+        intarr1[int1] = int1;
+        intarr1[int1] = cls1Inst;
+        intarr1[cls1Inst] = int1;
+
         intarr1 = new char[5];
         int1 = new int;
 
