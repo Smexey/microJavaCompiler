@@ -1,6 +1,5 @@
 package compiler;
 
-import java.nio.file.WatchEvent.Kind;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -28,6 +27,7 @@ public class SemanticPass extends VisitorAdaptor {
     SemanticPass() {
         Tab.currentScope().addToLocals(new Obj(Obj.Type, "bool", boolType));
         reportInfo("==================SEMANTIC==============", null);
+        reportError("==================SEMANTIC==============", null);
     }
 
     public void reportError(String message, SyntaxNode info) {
@@ -38,6 +38,7 @@ public class SemanticPass extends VisitorAdaptor {
         if (line != 0)
             msg.append(" na liniji ").append(line);
         log.error(msg.toString());
+        System.err.println(msg.toString());
     }
 
     public void reportInfo(String message, SyntaxNode info) {

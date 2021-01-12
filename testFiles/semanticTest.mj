@@ -110,7 +110,8 @@ program semanticTestClass
         Cls3 cls3Inst;
         Cls0 c0;
 	{
-        
+        methVara = int1 - -int1;
+
         intarr1 = new int[15];
 
         intarr1[int1] = int1;
@@ -123,7 +124,7 @@ program semanticTestClass
         int1 = -int1 * (int1 + 3);
         int1 = -methChar * (int1 + 3);
 
-        int1 = int1 - -int1;
+        
 
         x1 = new Cls1;
         x3 = new Cls2;

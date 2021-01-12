@@ -30,6 +30,7 @@ parser code {:
     	if (info instanceof Symbol)
             msg.append (" na liniji ").append(((Symbol)info).left);
         log.error(msg.toString());
+        System.err.println(msg.toString());
     }
 
     public void report_info(String message, Object info) {
@@ -98,14 +99,14 @@ non terminal ClassName;
 //===================
 
 
-//SYNTAX NON TERMINAL
+//SEMANTICS NON TERMINAL
 non terminal rs.etf.pp1.symboltable.concepts.Struct Type;
 
 non terminal rs.etf.pp1.symboltable.concepts.Obj ProgramName;
 non terminal rs.etf.pp1.symboltable.concepts.Obj ConstValue, MethodDecl, MethodTypeAndName;
 
 non terminal rs.etf.pp1.symboltable.concepts.Obj Designator;
-non terminal rs.etf.pp1.symboltable.concepts.Struct Factor,FactorMulopRepeat, Term, TermAddopRepeat, Expr, SmolExpr, FunctCall;
+non terminal rs.etf.pp1.symboltable.concepts.Struct Factor, FactorMulopRepeat, Term, TermAddopRepeat, Expr, SmolExpr, FunctCall;
 non terminal rs.etf.pp1.symboltable.concepts.Struct Assignment;
 non terminal rs.etf.pp1.symboltable.concepts.Struct Condition, CondTerm, CondFact, CondTermOrRepeat, CondFactorAndRepeat;
 

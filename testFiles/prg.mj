@@ -1,0 +1,9 @@
+program prg
+{
+
+	void main() 
+	int x, i; 
+	{
+		x = i+-i;
+	}
+}

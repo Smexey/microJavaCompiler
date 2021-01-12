@@ -10,6 +10,10 @@
             "request": "launch",
             "mainClass": "${file}",
             "cwd": "${workspaceFolder}",
+            "args": [
+                ">logs/std/std.out",
+                "2>logs/std/std.err"
+            ],
             // "preLaunchTask": "generateCode",
             // "postDebugTask": "openMainLog"
         }

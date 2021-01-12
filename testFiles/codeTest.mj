@@ -1,0 +1,28 @@
+program codeTest
+const int size = 10;
+int a;
+
+{
+	int f(int a, int arg)
+	int x;
+	{
+        x = arg;
+        return a+x;
+	}
+
+
+	void main() 
+	int x, i; 
+    char c;
+	{
+
+		x = i--i;
+
+        a = size;
+
+		x = 1+5;
+
+        a++;
+
+	}
+}
