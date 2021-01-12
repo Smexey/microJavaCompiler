@@ -60,6 +60,24 @@ program semanticTestClass
     Cls1 x1,x2;
 
     Cls2 x3;
+
+
+    class Cls3 extends Cls2
+    {
+        Cls1 cls1;
+        {
+            void meth()
+            {
+                clsMeth1(1,'a');
+            }
+
+            void clsMeth1(int a,char b)
+            
+            {
+
+            }
+        }
+    }
 {
     double errorFunction(string s) float f; {}
 
@@ -84,6 +102,7 @@ program semanticTestClass
         char methChar;
         Cls1 cls1Inst;
         Cls1 cls1Arr[];
+        Cls3 cls3Inst;
 	{
         
         intarr1 = new int[15];
@@ -118,7 +137,12 @@ program semanticTestClass
         foo(foo2(true),'a');
 
         f(f(f(f(int1))));
-        
+
+        cls3Inst.clsMeth1(1,'a');
+        cls3Inst.cls1.clsMeth1(1,'a');
+
+
+        cls3Inst.nothing.clsMeth1(1,'a');
 	}
 }
 
