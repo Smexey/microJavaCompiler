@@ -2,6 +2,43 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "dissassemble",
+            "command": "java",
+            "type": "shell",
+            "args": [
+                "-cp",
+                "${workspaceFolder}/lib/mj-runtime-1.1.jar",
+                "rs.etf.pp1.mj.runtime.disasm",
+                "${workspaceFolder}/output/program.obj"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "runuJvm",
+            "command": "java",
+            "type": "shell",
+            "args": [
+                "-cp",
+                "${workspaceFolder}/lib/mj-runtime-1.1.jar",
+                "rs.etf.pp1.mj.runtime.Run",
+                "${workspaceFolder}/output/program.obj",
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "dbguJvm",
+            "command": "java",
+            "type": "shell",
+            "args": [
+                "-cp",
+                "${workspaceFolder}/lib/mj-runtime-1.1.jar",
+                "rs.etf.pp1.mj.runtime.Run",
+                "${workspaceFolder}/output/program.obj",
+                "-debug"
+            ],
+            "problemMatcher": []
+        },
+        {
             "label": "generateCode",
             "group": {
                 "kind": "build",
@@ -51,7 +88,7 @@
             "args": [
                 "-rf",
                 "${workspaceFolder}/logs/*.log",
-                "${workspaceFolder}/logs/std/*",
+                "${workspaceFolder}/logs/std/*"
             ],
             "presentation": {
                 "echo": true,

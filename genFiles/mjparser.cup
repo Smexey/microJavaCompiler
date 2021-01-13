@@ -105,7 +105,8 @@ non terminal rs.etf.pp1.symboltable.concepts.Struct Type;
 non terminal rs.etf.pp1.symboltable.concepts.Obj ProgramName;
 non terminal rs.etf.pp1.symboltable.concepts.Obj ConstValue, MethodDecl, MethodTypeAndName;
 
-non terminal rs.etf.pp1.symboltable.concepts.Obj Designator;
+
+non terminal rs.etf.pp1.symboltable.concepts.Obj DesignatorIdent, Designator;
 non terminal rs.etf.pp1.symboltable.concepts.Struct Factor, FactorMulopRepeat, Term, TermAddopRepeat, Expr, SmolExpr, FunctCall;
 non terminal rs.etf.pp1.symboltable.concepts.Struct Assignment;
 non terminal rs.etf.pp1.symboltable.concepts.Struct Condition, CondTerm, CondFact, CondTermOrRepeat, CondFactorAndRepeat;
@@ -133,6 +134,7 @@ ConstVarClassDecl ::= ConstDecl | VarDecl | ClassDecl;
 Type ::= (Type) IDENT:typeName;
 
 ConstDecl ::= (ConstDecl) CONST Type:Type IDENT:Name EQUAL ConstValue:Val ConstDeclRepeat SEMICOLN;
+
 ConstValue ::= (ConstValueNum) NUM | (ConstValueChar) CHAR | (ConstValueBool) BOOLEAN;
 
 ConstDeclRepeat ::= ConstDeclRepeat COMMA IDENT:Name EQUAL ConstValue:Val
@@ -224,7 +226,7 @@ StartSwitch ::= (StartSwitch) SWITCH;
 
 DesignatorStatement ::= Assignment
                         |
-                        FunctCall
+                        (DesignatorStatementFunctCall) FunctCall
                         |
                         (DesignatorStatementIncrement)Designator INC
                         |
@@ -236,14 +238,18 @@ Assignment ::= (AssignmentNoErr) Designator:Designator Assignop Expr:Expr
                 error
                 ;
 
-Designator ::= (Designator) IDENT:Name ArrayBracketsOptional SubDesignatorRepeat;
-SubDesignatorRepeat ::= (SubDesignatorRepeatExists) DOT IDENT:Name ArrayBracketsOptional SubDesignatorRepeat | /* empty */;
+Designator ::= (Designator) DesignatorIdent ArrayBracketsOptional SubDesignatorRepeat;
+SubDesignatorRepeat ::= (SubDesignatorRepeatExists) DOT DesignatorIdent ArrayBracketsOptional SubDesignatorRepeat | /* empty */;
+
+DesignatorIdent ::= (DesignatorIdent) IDENT:Name;
+
+
 ArrayBracketsOptional ::= (ArrayBracketsExists) LBRACKET Expr:Index RBRACKET |(ArrayBracketsEmpty) /* empty */ ;
 
 /*operators*/
-Assignop ::= EQUAL;
-Mulop ::= MUL | DIV | MOD;
-Addop ::= ADD | SUB;
+Assignop ::= (OperatorEq) EQUAL;
+Mulop ::= (OperatorMul) MUL | (OperatorDiv) DIV | (OperatorMod) MOD;
+Addop ::= (OperatorAdd) ADD | (OperatorSub) SUB;
 
 MinusOptional ::= (MinusExists) SUB | (MinusEmpty) /* empty */;
 

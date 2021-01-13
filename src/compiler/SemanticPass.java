@@ -27,7 +27,6 @@ public class SemanticPass extends VisitorAdaptor {
     SemanticPass() {
         Tab.currentScope().addToLocals(new Obj(Obj.Type, "bool", boolType));
         reportInfo("==================SEMANTIC==============", null);
-        reportError("==================SEMANTIC==============", null);
     }
 
     public void reportError(String message, SyntaxNode info) {
@@ -68,10 +67,16 @@ public class SemanticPass extends VisitorAdaptor {
         currDeclType = null;
     }
 
+    private int nVars = 0;
+
+    public int getNVars() {
+        return this.nVars;
+    }
+
     private boolean insertVar(Struct s, String name, boolean arrayBracketsDecl) {
         boolean ret = false;
         Obj o = null;
-        if (Tab.find(name) == Tab.noObj) {
+        if (Tab.currentScope.findSymbol(name) == null) {
             if (arrayBracketsDecl) {
                 s = new Struct(Struct.Array, s);
                 arrayBracketsDecl = false;
@@ -81,6 +86,7 @@ public class SemanticPass extends VisitorAdaptor {
                 o = new Obj(Obj.Fld, name, s);
                 currentClass.getType().getMembersTable().insertKey(o);
             } else {
+                this.nVars++;
                 o = new Obj(Obj.Var, name, s);
             }
             ret = true;
@@ -110,7 +116,8 @@ public class SemanticPass extends VisitorAdaptor {
             Obj o = constDecl.getConstValue().obj;
             Struct s = o.getType();
             if (currDeclType.assignableTo(s)) {
-                Tab.insert(Obj.Con, constDecl.getName(), constDecl.getType().struct);
+                Obj t = Tab.insert(Obj.Con, constDecl.getName(), constDecl.getType().struct);
+                t.setAdr(constDecl.getConstValue().obj.getAdr());
             } else
                 reportError("const not assignable ", constDecl);
         } else {
@@ -124,7 +131,8 @@ public class SemanticPass extends VisitorAdaptor {
             Obj o = constDeclRep.getConstValue().obj;
             Struct s = o.getType();
             if (currDeclType.assignableTo(s)) {
-                Tab.insert(Obj.Con, constDeclRep.getName(), currDeclType);
+                Obj t = Tab.insert(Obj.Con, constDeclRep.getName(), currDeclType);
+                t.setAdr(constDeclRep.getConstValue().obj.getAdr());
             } else
                 reportError("const not assignable ", constDeclRep);
 
@@ -228,7 +236,7 @@ public class SemanticPass extends VisitorAdaptor {
         } else if (meth.getMethodType() instanceof MethodTypeReturnVoid) {
             type = Tab.noType;
         }
-        currentMethod = Tab.insert(Obj.Meth, meth.getName(), type);
+        meth.obj = currentMethod = Tab.insert(Obj.Meth, meth.getName(), type);
         Tab.openScope();
 
         if (currentClass != null) {
@@ -270,8 +278,8 @@ public class SemanticPass extends VisitorAdaptor {
     }
 
     public void visit(FormParDeclNoErr var) {
-        Obj v = Tab.find(var.getName());
-        if (v == Tab.noObj || v.getKind() == Obj.Fld) {
+        Obj v = Tab.currentScope.findSymbol(var.getName());
+        if (v == Tab.noObj || v == null) {
             if (var.getArrayBracketsDeclOptional() instanceof ArrayBracketsDeclExists) {
                 Tab.insert(Obj.Var, var.getName(), new Struct(Struct.Array, var.getType().struct));
             } else {
@@ -291,13 +299,17 @@ public class SemanticPass extends VisitorAdaptor {
 
     // STATEMENT
     // DESIGNATOR
+    public void visit(DesignatorIdent des) {
+        des.obj = Tab.find(des.getName());
+    }
+
     public void visit(Designator des) {
-        Obj obj = Tab.find(des.getName());
+        Obj obj = des.getDesignatorIdent().obj;
 
         if (obj == Tab.noObj && currentClass != null) {
             Struct s = currentClass.getType();
             while (obj == Tab.noObj && s != null) {
-                obj = s.getMembersTable().searchKey(des.getName());
+                obj = s.getMembersTable().searchKey(des.getDesignatorIdent().getName());
                 if (obj == null)
                     obj = Tab.noObj;
                 s = s.getElemType();
@@ -322,7 +334,7 @@ public class SemanticPass extends VisitorAdaptor {
                 Struct s = obj.getType();
                 boolean found = false;
                 while (s != null) {
-                    Obj member = s.getMembersTable().searchKey(curr.getName());
+                    Obj member = s.getMembersTable().searchKey(curr.getDesignatorIdent().getName());
                     // u definiciji klase smo
 
                     if (member != null) {
@@ -341,7 +353,7 @@ public class SemanticPass extends VisitorAdaptor {
                     s = s.getElemType();
                 }
                 if (!found)
-                    reportError("no such field: " + curr.getName(), curr);
+                    reportError("no such field: " + curr.getDesignatorIdent().getName(), curr);
 
                 rep = curr.getSubDesignatorRepeat();
             }
@@ -451,7 +463,6 @@ public class SemanticPass extends VisitorAdaptor {
             functCall.struct = fDes.getType();
         } else
             reportError("not a function", functCall);
-
     }
 
     public void visit(FunctDesignator t) {
@@ -471,8 +482,13 @@ public class SemanticPass extends VisitorAdaptor {
         df.struct = df.getDesignator().obj.getType();
     }
 
-    public void visit(FunctCallFactor df) {
-        df.struct = df.getFunctCall().struct;
+    public void visit(FunctCallFactor t) {
+        Obj o = t.getFunctCall().getFunctDesignator().getDesignator().obj;
+        if (o.getType() == Tab.noType) {
+            reportError("cant use funct with no return inside as a factor "
+                    + t.getFunctCall().getFunctDesignator().getDesignator().getDesignatorIdent().getName(), t);
+        }
+        t.struct = t.getFunctCall().struct;
     }
 
     public void visit(ConstFactor df) {

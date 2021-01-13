@@ -37,9 +37,9 @@ public class Log4JUtils {
 		File logFile = new File(logFileName);
 		File renamedFile = new File(logFile.getAbsolutePath().substring(0) + System.currentTimeMillis() + ".log");
 
-		if (logFile.exists()) {
-			logFile = renamedFile;
-		}
+		// if (logFile.exists()) {
+		// logFile = renamedFile;
+		// }
 
 		fAppender.setFile(logFile.getAbsolutePath());
 		fAppender.activateOptions();

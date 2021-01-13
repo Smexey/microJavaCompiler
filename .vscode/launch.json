@@ -11,9 +11,9 @@
             "mainClass": "${file}",
             "cwd": "${workspaceFolder}",
             "args": [
-                "testFiles/prg.mj",
-                ">logs/std/std.out",
-                "2>logs/std/std.err"
+                "testFiles/codeTest.mj",
+                ">logs/std/std.out.log",
+                // "2>logs/std/std.err.log"
             ],
             // "preLaunchTask": "generateCode",
             // "postDebugTask": "openMainLog"

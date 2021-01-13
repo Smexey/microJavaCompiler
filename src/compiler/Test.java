@@ -2,6 +2,7 @@ package compiler;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 
 import org.apache.log4j.Logger;
@@ -9,6 +10,7 @@ import org.apache.log4j.xml.DOMConfigurator;
 
 import ast.Program;
 import java_cup.runtime.Symbol;
+import rs.etf.pp1.mj.runtime.Code;
 import rs.etf.pp1.symboltable.Tab;
 import util.DumpSymbolTableVisitorExt;
 import util.Log4JUtils;
@@ -50,6 +52,17 @@ public class Test {
             log.info("===========================");
             log.info(prog.toString(""));
             log.info("===========================");
+
+            if (semanticCheck.passed() && !p.errorDetected) {
+                File objFile = new File("output/program.obj");
+                CodeGenerator codeGenerator = new CodeGenerator();
+
+                prog.traverseBottomUp(codeGenerator);
+                Code.dataSize = semanticCheck.getNVars();
+                Code.mainPc = codeGenerator.getMainPc();
+                Code.write(new FileOutputStream(objFile));
+                log.info("Parsiranje uspesno zavrseno!");
+            }
 
         }
     }
