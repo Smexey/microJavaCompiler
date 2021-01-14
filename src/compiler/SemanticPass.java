@@ -301,6 +301,11 @@ public class SemanticPass extends VisitorAdaptor {
     // DESIGNATOR
     public void visit(DesignatorIdent des) {
         des.obj = Tab.find(des.getName());
+        if (des.getParent() instanceof SubDesignatorRepeatExists) {
+            // trazi u scopeu klase
+            SubDesignatorRepeatExists subdes = (SubDesignatorRepeatExists) des.getParent();
+
+        }
     }
 
     public void visit(Designator des) {
@@ -340,11 +345,12 @@ public class SemanticPass extends VisitorAdaptor {
                     if (member != null) {
                         found = true;
 
+                        // setuje obj DesignatorID za codgen
+                        curr.getDesignatorIdent().obj = member;
+
                         // if array
                         if (curr.getArrayBracketsOptional() instanceof ArrayBracketsExists) {
-                            // obj = member.getType().getElemType();
-                            obj = member;
-                            obj = new Obj(Obj.Var, "", member.getType().getElemType());
+                            obj = new Obj(Obj.Elem, "", member.getType().getElemType());
                         } else {
                             obj = member;
                         }
