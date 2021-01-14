@@ -6,11 +6,8 @@ int a;
 	void main() 
     bool b1,barr[];
 	{
-
         b1 = true;
 
-        print(b1);
-        b1 = false;
-        print(b1);
+
 	}
 }

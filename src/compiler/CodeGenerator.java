@@ -128,6 +128,11 @@ public class CodeGenerator extends VisitorAdaptor {
         }
     }
 
+    // CONDITION
+    public void visit(CondTermOrRepeatExists t) {
+        // Code.put(Code.);
+    }
+
     public void visit(AssignmentNoErr t) {
         Code.store(t.getDesignator().obj);
     }

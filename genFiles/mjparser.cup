@@ -294,7 +294,9 @@ CondTerm ::= (CondTerm) CondFact:CondFact CondFactorAndRepeat:OtherCondFacts;
 CondFactorAndRepeat ::= (CondFactorAndRepeatExists) CondFactorAndRepeat:OtherCondFacts AND CondFact:CondFact | /* empty */;
 CondFact ::= (CondFact) Expr:Expr RelopExprOptional:OtherExpr;
 
-Relop ::= EQUALS | NEQUALS | GRT | GRTEQUAL | LESS | LESSEQUAL;
+Relop ::= (OperatorEq) EQUALS | (OperatorEq) NEQUALS | (OperatorEq) GRT |(OperatorEq) GRTEQUAL 
+            | (OperatorEq) LESS | (OperatorEq) LESSEQUAL;
+
 RelopExprOptional ::= (RelopExprExists) Relop Expr:Expr |(RelopExprEmpty) /* empty */;
 
 
