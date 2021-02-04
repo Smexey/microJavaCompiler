@@ -1,6 +1,7 @@
 program codeTest
 const int size = 12;
 int a;
+int arr[];
 
 {
 
@@ -8,21 +9,24 @@ int a;
 	{
 		return x + 1;
 	}
-	void main() 
-    bool b1,barr[];
-	int i1;
+
+	int sum(int z, int d)
 	{
-       switch(f(i1)){
+		return z + d;
+	}
 
-           case 1:
+	void main() 
 
-           case 2:
+	{
+		a = 1;
+		arr = new int[5];
 
+		arr[2] = 3;
+		print(arr[2]);
 
-           case 3:
-
-           case 4:
-       }
-
+		arr[2] = f(2);
+		print(arr[2]);
+		arr[2] = 1+sum(1, 2);
+		print(arr[2]);
 	}
 }

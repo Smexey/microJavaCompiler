@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Stack;
+import java.util.logging.Level;
 
 import org.apache.log4j.Logger;
 
@@ -73,6 +74,8 @@ public class SemanticPass extends VisitorAdaptor {
         return this.nVars;
     }
 
+    private int level = 0;
+
     private boolean insertVar(Struct s, String name, boolean arrayBracketsDecl) {
         boolean ret = false;
         Obj o = null;
@@ -93,6 +96,7 @@ public class SemanticPass extends VisitorAdaptor {
         } else {
             o = new Obj(Obj.Var, name, Tab.noType);
         }
+        o.setLevel(level);
         Tab.currentScope().addToLocals(o);
         return ret;
     }
@@ -239,6 +243,8 @@ public class SemanticPass extends VisitorAdaptor {
         meth.obj = currentMethod = Tab.insert(Obj.Meth, meth.getName(), type);
         Tab.openScope();
 
+        level++;
+
         if (currentClass != null) {
             Tab.insert(Obj.Var, "this", currentClass.getType());
         }
@@ -253,6 +259,7 @@ public class SemanticPass extends VisitorAdaptor {
         Tab.chainLocalSymbols(currentMethod);
         Tab.closeScope();
         currentMethod = null;
+        level--;
     }
 
     public void visit(ReturnExprStatement ret) {

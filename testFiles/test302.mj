@@ -53,10 +53,12 @@ int niz[];
 		niz = new int[3];
 		niz[0] = 1;
 		niz[1] = 2;
-		niz[2] = sum(niz[1], niz[0]) + 1;
+
+		niz[2] = sum(niz[0],niz[1])+1;
+		
 		//niz[2] = 4;
 
-		print(niz[2]);
+		print(niz[1]);
 		if(verify() || niz[2] == 4) print('A'); 
 		else print(ord('a'));
 		
@@ -75,14 +77,16 @@ int niz[];
 		if(i == 3 && verify()) print(-4);
 		else print(4);  
 		
+		
 		read(niz[0]);
 		read(niz[1]);
 		read(niz[2]);
 		print(eol);
-		
-		print(sum (sum(niz[0], niz[1]), niz[2])); 
+		print(niz[2]);
+		print(sum(sum(niz[0], niz[1]), niz[2])); 
 			
 		print(eol); 
+		print(niz[2]);
 		print(inkrement(niz[2], 2));
 		
 		//print(verify() ? 't' : 'f');

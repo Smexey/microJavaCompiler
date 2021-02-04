@@ -22,6 +22,8 @@ public class CodeGenerator extends VisitorAdaptor {
         return this.mainPc;
     }
 
+    int level = 0;
+
     public void visit(PrintStatement print) {
         // expr vec na steku
         if (print.getExpr().struct == Tab.intType) {
