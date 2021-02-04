@@ -31,9 +31,13 @@ int niz[];
 	}	
 	
 	void main()
+	char c;
 	{
+		
 		if(1!=1) print(-6);
 		else print(0);  
+
+
 			
 		ibool = false;
 		i = 0;
@@ -50,7 +54,10 @@ int niz[];
 		niz[0] = 1;
 		niz[1] = 2;
 		niz[2] = sum(niz[1], niz[0]) + 1;
-		if(verify() || niz[2] == 4) print(ord('A')); 
+		//niz[2] = 4;
+
+		print(niz[2]);
+		if(verify() || niz[2] == 4) print('A'); 
 		else print(ord('a'));
 		
 		print(eol);

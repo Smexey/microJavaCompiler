@@ -4,6 +4,7 @@ program prg
 	void main() 
 	int x, i; 
 	{
-		x = i+-i;
+		//ne sme ovo sintaksna
+		x = i+ -i;
 	}
 }

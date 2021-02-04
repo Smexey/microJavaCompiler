@@ -1,5 +1,9 @@
 package compiler;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
+
 import ast.*;
 import compiler.CounterVisitor.FormParamCounter;
 import compiler.CounterVisitor.VarDeclCounter;
@@ -129,10 +133,144 @@ public class CodeGenerator extends VisitorAdaptor {
     }
 
     // CONDITION
-    public void visit(CondTermOrRepeatExists t) {
-        // Code.put(Code.);
+    int adr = -1;
+
+    Stack<List<Integer>> elseLists = new Stack<>();
+    Stack<List<Integer>> thenLists = new Stack<>();
+    Stack<Integer> endIfs = new Stack<>();
+
+    public static int CONTROLDOSTATE = 0, CONTROLIFSTATE = 1;
+    Stack<Integer> controlStates = new Stack<>();
+    Stack<Integer> startDos = new Stack<>();
+
+    public void visit(StartIf t) {
+        controlStates.push(CONTROLIFSTATE);
+        List<Integer> elseList = new ArrayList<>();
+        List<Integer> thenList = new ArrayList<>();
+        elseLists.push(elseList);
+        thenLists.push(thenList);
     }
 
+    public void visit(StartDo t) {
+        controlStates.push(CONTROLDOSTATE);
+        startDos.push(Code.pc);
+    }
+
+    public void fixup(List<Integer> adrL) {
+        for (Integer adr : adrL) {
+            Code.fixup(adr);
+        }
+        adrL.clear();
+    }
+
+    public void visit(ThenStatement t) {
+
+        IfStatement parent = (IfStatement) t.getParent();
+        if (parent.getElseStatementOptional() instanceof ElseStatementExists) {
+            Code.putJump(0);
+            endIfs.push(Code.pc - 2);
+        }
+
+    }
+
+    public void visit(ElseStart t) {
+        fixup(elseLists.peek());
+        elseLists.pop();
+    }
+
+    public void visit(ElseStatementEmpty t) {
+        fixup(elseLists.peek());
+        elseLists.pop();
+    }
+
+    public void visit(ElseStatementExists t) {
+        Code.fixup(endIfs.pop());
+    }
+
+    public void visit(OrStart t) {
+        Code.putJump(0);
+        fixup(elseLists.peek());
+        thenLists.peek().add(Code.pc - 2);
+    }
+
+    public void visit(ConditionNoErr t) {
+
+        if (controlStates.peek() == CONTROLIFSTATE) {
+            fixup(thenLists.peek());
+            thenLists.pop();
+        } else {
+            // vec su sve dobro namestene zbog skoka unazad
+            startDos.pop();
+        }
+        controlStates.pop();
+    }
+
+    // public static void putFalseJump(int op, int adr) {
+    // put(jcc + inverse[op]);
+    // put2(adr - pc + 1);
+    // }
+
+    public void visit(CondFact t) {
+        if (t.getRelopExprOptional() instanceof RelopExprExists) {
+            RelopExprExists relopExpr = (RelopExprExists) t.getRelopExprOptional();
+            if (relopExpr.getRelop() instanceof CmpEq) {
+                if (controlStates.peek() == CONTROLIFSTATE) {
+                    Code.putFalseJump(Code.eq, 0);
+                } else if (controlStates.peek() == CONTROLDOSTATE) {
+                    Code.putFalseJump(Code.ne, startDos.peek());
+                }
+            } else if (relopExpr.getRelop() instanceof CmpNeq) {
+                if (controlStates.peek() == CONTROLIFSTATE) {
+                    Code.putFalseJump(Code.ne, 0);
+                } else if (controlStates.peek() == CONTROLDOSTATE) {
+                    Code.putFalseJump(Code.eq, startDos.peek());
+                }
+            } else if (relopExpr.getRelop() instanceof CmpGrt) {
+                if (controlStates.peek() == CONTROLIFSTATE) {
+                    Code.putFalseJump(Code.gt, 0);
+                } else if (controlStates.peek() == CONTROLDOSTATE) {
+                    Code.putFalseJump(Code.le, startDos.peek());
+                }
+            } else if (relopExpr.getRelop() instanceof CmpGrtEq) {
+                if (controlStates.peek() == CONTROLIFSTATE) {
+                    Code.putFalseJump(Code.ge, 0);
+                } else if (controlStates.peek() == CONTROLDOSTATE) {
+                    Code.putFalseJump(Code.lt, startDos.peek());
+                }
+            } else if (relopExpr.getRelop() instanceof CmpLess) {
+                if (controlStates.peek() == CONTROLIFSTATE) {
+                    Code.putFalseJump(Code.lt, 0);
+                } else if (controlStates.peek() == CONTROLDOSTATE) {
+                    Code.putFalseJump(Code.ge, startDos.peek());
+                }
+            } else if (relopExpr.getRelop() instanceof CmpLessEq) {
+                if (controlStates.peek() == CONTROLIFSTATE) {
+                    Code.putFalseJump(Code.le, 0);
+                } else if (controlStates.peek() == CONTROLDOSTATE) {
+                    Code.putFalseJump(Code.gt, startDos.peek());
+                }
+            }
+            if (controlStates.peek() == CONTROLIFSTATE) {
+                elseLists.peek().add(Code.pc - 2);
+            } else if (controlStates.peek() == CONTROLIFSTATE) {
+                // nema nista vec radi
+            }
+        } else {
+            // ima samo expr unutar ifa
+            // cmp sa 0?
+            Code.put(Code.const_n + 0);
+            Code.putFalseJump(Code.ne, 0);
+
+            if (controlStates.peek() == CONTROLIFSTATE) {
+                elseLists.peek().add(Code.pc - 2);
+            } else if (controlStates.peek() == CONTROLIFSTATE) {
+                // nema nista vec radi
+            }
+
+        }
+    }
+
+    // DESIGNATOR
     public void visit(AssignmentNoErr t) {
         Code.store(t.getDesignator().obj);
     }
@@ -160,7 +298,9 @@ public class CodeGenerator extends VisitorAdaptor {
             Designator des = (Designator) t.getParent();
             // ako je rvalue ubacuje se
             if (!(des.getParent() instanceof Assignment)) {
-                Code.load(t.obj);
+                // da se ne loaduje ime funkcije
+                if (!(des.getParent() instanceof FunctDesignator))
+                    Code.load(t.obj);
             } else {
                 // jeste assign ali jos nije apsolutna adresa izracunata
                 if (des.getArrayBracketsOptional() instanceof ArrayBracketsExists

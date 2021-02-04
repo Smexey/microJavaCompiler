@@ -89,12 +89,14 @@ non terminal ActPars, ActParsOptional;
 
 non terminal Relop, RelopExprOptional;
 
-non terminal ElseStatementOptional, PrintWidthOptional, CaseRepeat;
+non terminal ElseStatementOptional, ElseStart, PrintWidthOptional, CaseRepeat;
 
 non terminal SuperClass;
 
-non terminal StartSwitch, StartDo, FunctDesignator;
+non terminal StartSwitch, StartDo, StartIf, FunctDesignator;
 non terminal ClassName;
+
+non terminal OrStart, CondStart, ThenStatement;
 
 //===================
 
@@ -200,7 +202,7 @@ FormParRepeat ::= FormParRepeat COMMA FormParDecl
 StatementRepeat ::= StatementRepeat Statement | /* empty */;
 Statement ::= DesignatorStatement SEMICOLN
             |
-            (IfStatement) IF LPAREN Condition RPAREN Statement ElseStatementOptional
+            (IfStatement) StartIf CondStart Condition RPAREN ThenStatement ElseStatementOptional
             |
             (DoWhileStatement) StartDo Statement WHILE LPAREN Condition RPAREN SEMICOLN
             |
@@ -221,6 +223,10 @@ Statement ::= DesignatorStatement SEMICOLN
             (CodeBlockStatement) LBRACE StatementRepeat RBRACE
             ;
 
+ThenStatement::=(ThenStatement) Statement;
+CondStart::= (CondStart) LPAREN;
+
+StartIf::= (StartIf)IF;
 StartDo ::= (StartDo) DO;
 StartSwitch ::= (StartSwitch) SWITCH;
 
@@ -288,19 +294,24 @@ ActPars ::= (ActParsMultiple) ActPars COMMA Expr:Expr | (ActParsSingle) Expr:Exp
 
 
 Condition ::= (ConditionNoErr) CondTerm:CondTerm CondTermOrRepeat:OtherCondTerms | error;
-CondTermOrRepeat ::= (CondTermOrRepeatExists) CondTermOrRepeat:OtherCondTerms OR CondTerm:CondTerm | /* empty */;
+CondTermOrRepeat ::= (CondTermOrRepeatExists) CondTermOrRepeat:OtherCondTerms OrStart CondTerm:CondTerm | /* empty */;
+OrStart::= (OrStart) OR;
+
+
+
 
 CondTerm ::= (CondTerm) CondFact:CondFact CondFactorAndRepeat:OtherCondFacts;
 CondFactorAndRepeat ::= (CondFactorAndRepeatExists) CondFactorAndRepeat:OtherCondFacts AND CondFact:CondFact | /* empty */;
 CondFact ::= (CondFact) Expr:Expr RelopExprOptional:OtherExpr;
 
-Relop ::= (OperatorEq) EQUALS | (OperatorEq) NEQUALS | (OperatorEq) GRT |(OperatorEq) GRTEQUAL 
-            | (OperatorEq) LESS | (OperatorEq) LESSEQUAL;
+Relop ::= (CmpEq) EQUALS | (CmpNeq) NEQUALS | (CmpGrt) GRT |(CmpGrtEq) GRTEQUAL 
+            | (CmpLess) LESS | (CmpLessEq) LESSEQUAL;
 
 RelopExprOptional ::= (RelopExprExists) Relop Expr:Expr |(RelopExprEmpty) /* empty */;
 
 
-ElseStatementOptional ::= (ElseStatementExists) ELSE Statement | (ElseStatementEmpty) /* empty */;
+ElseStatementOptional ::= (ElseStatementExists) ElseStart Statement | (ElseStatementEmpty) /* empty */;
+ElseStart ::= (ElseStart)ELSE;
 CaseRepeat ::= (CaseRepeatExists) CaseRepeat CASE NUM:Num DDOTS StatementRepeat | /* empty */;
 PrintWidthOptional ::= (PrintWidthExists) COMMA NUM | (PrintWidthEmpty) /* empty */;
 

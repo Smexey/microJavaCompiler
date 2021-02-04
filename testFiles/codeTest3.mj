@@ -1,0 +1,67 @@
+program codeTest
+const int size = 12;
+int a;
+
+{
+
+	int f(int x)
+	{
+		return x + 1;
+	}
+	void main() 
+    bool b1,barr[];
+	int i1,i2;
+	{
+
+        i1 = 0;
+
+        do{
+            print(i1);
+            print(eol);
+            i2 = 0;
+            
+            do{
+                
+                if(i2!=0){
+                    print(i2);
+                }else{
+                    if(i1<=1){
+                        print('e');
+                    }
+                }
+                
+                i2++;
+            }while(i2<=i1);
+
+            print(eol);
+            i1++;
+        }while(i1<5);
+
+
+
+        
+        print(eol);
+        b1 = true;
+        //i1= 1;
+        
+        if(i1==5 && b1 || i1==4 || i1==3){
+            print(i1);
+        }
+        print(eol);
+        if(i1==5){
+            print('t');
+            if(b1){
+                print('t');
+            }else{
+                print('f');
+            }
+        }else if(i1==4){
+            print(i1);
+        }else if(i1==3){
+            print(i1);
+        }else{
+            print('F');
+        }
+
+	}
+}

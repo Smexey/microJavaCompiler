@@ -1,0 +1,28 @@
+program codeTest
+const int size = 12;
+int a;
+
+{
+
+	int f(int x)
+	{
+		return x + 1;
+	}
+	void main() 
+    bool b1,barr[];
+	int i1;
+	{
+       switch(f(i1)){
+
+           case 1:
+
+           case 2:
+
+
+           case 3:
+
+           case 4:
+       }
+
+	}
+}

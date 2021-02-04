@@ -3,11 +3,40 @@ const int size = 12;
 int a;
 
 {
+
+	int f(int x)
+	{
+		return x + 1;
+	}
 	void main() 
     bool b1,barr[];
+	int i1;
 	{
-        b1 = true;
+        b1 = false;
+		
+
+		i1 = f(5);
+		print(i1);
+		if(b1){
+			print(true);
+		}
+		print(i1);
 
 
+
+		b1 = false;
+		if(b1){
+			print(true);
+		}
+		print(i1);
+
+
+		if(b1){
+			print(true);
+		}else
+		{
+			print('e');
+		}
+		print(i1);
 	}
 }
