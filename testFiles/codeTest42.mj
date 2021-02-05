@@ -1,0 +1,54 @@
+program codeTest
+const int size = 12;
+
+
+class A 
+{
+	int a;
+	{
+		int f(int x){
+			return x+1;
+		}
+
+		int g(int x){
+			return this.a+x;
+		}
+
+		int g2(int x){
+			return a+x;
+		}
+
+		int z(int a){
+			return this.a + a;
+		}
+	
+	}
+}
+
+class B extends A 
+{
+	int b;
+	{
+		int f(int x){
+			return x+100;
+		}
+
+		int z(int a){
+			return this.b + this.a + a;
+		}
+	}
+}
+
+{
+
+	void main() 
+	A a;
+	{
+		a = new B;
+		a.a = 5;
+		print(a.a);
+
+		print(chr(65));
+		print(ord('a'));
+	}
+}

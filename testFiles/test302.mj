@@ -59,7 +59,7 @@ int niz[];
 		//niz[2] = 4;
 
 		print(niz[1]);
-		if(verify() || niz[2] == 4) print('A'); 
+		if(verify() || niz[2] == 4) print(ord('A')); 
 		else print(ord('a'));
 		
 		print(eol);

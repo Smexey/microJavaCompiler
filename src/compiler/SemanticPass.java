@@ -186,6 +186,7 @@ public class SemanticPass extends VisitorAdaptor {
         // napravi novi tip mora novi struct zbog poredjenja structova kasnije?
         currentClass = Tab.insert(Obj.Type, t.getName(), new Struct(Struct.Class));
         Tab.openScope();
+        Tab.insert(Obj.Fld, "tvf", Tab.nullType);
     }
 
     public void visit(ClassDecl t) {

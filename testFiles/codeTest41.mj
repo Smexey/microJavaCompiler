@@ -1,0 +1,49 @@
+program prg
+class A
+{
+	int a;
+	{
+
+		int g(int a)
+		{
+			return a+5;
+		}
+		
+		int f()
+		int x;
+		{
+			return a+g(1);
+		}
+
+		
+	}
+}
+class B extends A
+{
+	
+	{
+		int f()
+		{
+			return 500;
+		}
+	}
+}
+
+A a;
+{
+	int f2()
+	int x;
+	{
+		return 100;
+	}
+	void main() 
+	int i;
+	{
+		a = new A;
+		a.a = 100;
+
+		i = a.f();
+
+		print(i);
+	}
+}

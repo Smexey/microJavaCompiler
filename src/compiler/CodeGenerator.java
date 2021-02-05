@@ -22,6 +22,38 @@ public class CodeGenerator extends VisitorAdaptor {
         return this.mainPc;
     }
 
+    public void visit(ProgramName t) {
+        // init metode
+
+        Obj chrObj = Tab.find("chr");
+        chrObj.setAdr(Code.pc);
+        Code.put(Code.enter);
+        Code.put(1); // args
+        Code.put(1);
+        Code.put(Code.load_n);// load0
+        Code.put(Code.exit);
+        Code.put(Code.return_);
+
+        Obj ordObj = Tab.find("ord");
+        ordObj.setAdr(Code.pc);
+        Code.put(Code.enter);
+        Code.put(1); // args
+        Code.put(1);
+        Code.put(Code.load_n); // load0
+        Code.put(Code.exit);
+        Code.put(Code.return_);
+
+        Obj lenObj = Tab.find("len");
+        lenObj.setAdr(Code.pc);
+        Code.put(Code.enter);
+        Code.put(1); // args
+        Code.put(1);
+        Code.put(Code.load_n);// load0
+        Code.put(Code.arraylength);
+        Code.put(Code.exit);
+        Code.put(Code.return_);
+    }
+
     int level = 0;
 
     public void visit(PrintStatement print) {
@@ -57,8 +89,11 @@ public class CodeGenerator extends VisitorAdaptor {
         parent.traverseTopDown(paramCnter);
 
         Code.put(Code.enter);
-        Code.put(paramCnter.getCnt());
-        Code.put(paramCnter.getCnt() + varCnter.getCnt());
+
+        // ako je cls onda ima this
+
+        Code.put(paramCnter.getCnt() + t.obj.getLevel());
+        Code.put(paramCnter.getCnt() + t.obj.getLevel() + varCnter.getCnt());
     }
 
     public void visit(MethodDecl t) {
@@ -70,6 +105,8 @@ public class CodeGenerator extends VisitorAdaptor {
     public void visit(FunctCall t) {
         Obj o = t.getFunctDesignator().getDesignator().obj;
         int offset = o.getAdr() - Code.pc;
+
+        // provera dal je metoda da se gurne this
 
         Code.put(Code.call);
         Code.put2(offset);
@@ -311,6 +348,17 @@ public class CodeGenerator extends VisitorAdaptor {
         }
     }
 
+    // CLASS
+    boolean inClass = false;
+
+    public void visit(ClassName t) {
+        inClass = true;
+    }
+
+    public void visit(ClassDecl t) {
+        inClass = false;
+    }
+
     // DESIGNATOR
     public void visit(AssignmentNoErr t) {
         Code.store(t.getDesignator().obj);
@@ -337,11 +385,28 @@ public class CodeGenerator extends VisitorAdaptor {
     public void visit(DesignatorIdent t) {
         if (t.getParent() instanceof Designator) {
             Designator des = (Designator) t.getParent();
+
+            // ima neko posle mene?
+
             // ako je rvalue ubacuje se
             if (!(des.getParent() instanceof Assignment)) {
+                if (des.obj.getKind() == Obj.Fld) {
+                    // tipa je field a nema this ispred sebe
+                    Code.put(Code.load_n + 0);
+                }
+
+                if (des.obj.getKind() == Obj.Meth && des.obj.getLevel() > 0) {
+                    // unutrasnja metoda
+                    Code.put(Code.load_n + 0);
+                }
+
                 // da se ne loaduje ime funkcije
                 if (!(des.getParent() instanceof FunctDesignator))
                     Code.load(t.obj);
+                else if (des.getSubDesignatorRepeat() instanceof SubDesignatorRepeatExists) {
+                    Code.load(t.obj);
+                }
+
             } else {
                 // jeste assign ali jos nije apsolutna adresa izracunata
                 if (des.getArrayBracketsOptional() instanceof ArrayBracketsExists
@@ -370,7 +435,7 @@ public class CodeGenerator extends VisitorAdaptor {
                 while (!(x instanceof Designator))
                     x = x.getParent();
 
-                if (!(x.getParent() instanceof Assignment)) {
+                if (!(x.getParent() instanceof Assignment) && !(x.getParent() instanceof FunctDesignator)) {
                     Code.load(t.obj);
                 }
 
@@ -380,6 +445,7 @@ public class CodeGenerator extends VisitorAdaptor {
                 }
             }
         }
+        // ako je posle mene funkcija stavljam se na stek
     }
 
     public void visit(Designator t) {
