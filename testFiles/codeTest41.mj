@@ -1,4 +1,10 @@
 program prg
+
+
+int b;
+bool c;
+char c2;
+
 class A
 {
 	int a;

@@ -3,6 +3,7 @@ package compiler;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 import java.util.logging.Level;
@@ -19,6 +20,12 @@ public class SemanticPass extends VisitorAdaptor {
 
     public boolean passed() {
         return !errorDetected;
+    }
+
+    List<Obj> clsList = new ArrayList<>();
+
+    public List<Obj> getClsList() {
+        return clsList;
     }
 
     Logger log = Logger.getLogger(getClass());
@@ -205,6 +212,7 @@ public class SemanticPass extends VisitorAdaptor {
         Tab.chainLocalSymbols(currentClass.getType());
         Tab.closeScope();
 
+        clsList.add(currentClass);
         currentClass = null;
     }
 

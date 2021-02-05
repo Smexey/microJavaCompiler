@@ -141,7 +141,7 @@ ConstDecl ::= (ConstDecl) CONST Type:Type IDENT:Name EQUAL ConstValue:Val ConstD
 
 ConstValue ::= (ConstValueNum) NUM | (ConstValueChar) CHAR | (ConstValueBool) BOOLEAN;
 
-ConstDeclRepeat ::= ConstDeclRepeat COMMA IDENT:Name EQUAL ConstValue:Val
+ConstDeclRepeat ::= (ConstDeclRepeatExists) ConstDeclRepeat COMMA IDENT:Name EQUAL ConstValue:Val
                     |
                     /* empty */
                     ;

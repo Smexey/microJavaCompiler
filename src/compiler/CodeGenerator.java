@@ -2,10 +2,12 @@ package compiler;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 
 import ast.*;
 import compiler.CounterVisitor.FormParamCounter;
+import compiler.CounterVisitor.GlobalVarConstCounter;
 import compiler.CounterVisitor.VarDeclCounter;
 import rs.etf.pp1.mj.runtime.Code;
 import rs.etf.pp1.symboltable.*;
@@ -13,6 +15,17 @@ import rs.etf.pp1.symboltable.concepts.*;
 
 public class CodeGenerator extends VisitorAdaptor {
     private int mainPc;
+    private Program rootProgram = null;
+    List<Obj> clsList = null;
+    int tvfSize = 0;
+
+    public int getTVFSize() {
+        return tvfSize;
+    }
+
+    CodeGenerator(List<Obj> clsList) {
+        this.clsList = clsList;
+    }
 
     // moraju se porediti preko kind a ne referencom
     Struct boolType = new Struct(Struct.Bool);
@@ -24,7 +37,7 @@ public class CodeGenerator extends VisitorAdaptor {
 
     public void visit(ProgramName t) {
         // init metode
-
+        rootProgram = (Program) t.getParent();
         Obj chrObj = Tab.find("chr");
         chrObj.setAdr(Code.pc);
         Code.put(Code.enter);
@@ -74,10 +87,52 @@ public class CodeGenerator extends VisitorAdaptor {
         Code.load(o);
     }
 
+    private void generateTVF() {
+        GlobalVarConstCounter varCounter = new GlobalVarConstCounter();
+        rootProgram.getConstVarClassDeclRepeat().traverseBottomUp(varCounter);
+        int cnt = varCounter.getCnt();
+        System.err.println("cnt = " + cnt);
+        // racunam da su svi 4?
+        // mozda uzimam tip? sta ja znam?
+
+        for (Obj cls : clsList) {
+            for (Obj member : cls.getType().getMembers()) {
+                if (member.getKind() == Obj.Meth) {
+                    // generate tvf entry
+                    for (char c : member.getName().toCharArray()) {
+                        Code.loadConst(c);
+                        Code.put(Code.putstatic);
+                        Code.put2(cnt++);
+                    }
+                    // end name string
+                    Code.loadConst(-1);
+                    Code.put(Code.putstatic);
+                    Code.put2(cnt++);
+
+                    // put adr
+                    Code.loadConst(member.getAdr());
+                    Code.put(Code.putstatic);
+                    Code.put2(cnt++);
+
+                }
+            }
+            // end class methods
+            Code.loadConst(-2);
+            Code.put(Code.putstatic);
+            Code.put2(cnt++);
+        }
+
+        tvfSize = cnt;
+
+    }
+
     public void visit(MethodTypeAndName t) {
         if ("main".equalsIgnoreCase(t.getName())) {
             this.mainPc = Code.pc; // na kraju setujem nazad ovaj pc
             // Code.mainPc = Code.pc; zasto ovo nisam uradio pardoniram
+
+            // mainpc je sada iznad tvf jer mora da se inituje
+            generateTVF();
         }
         t.obj.setAdr(Code.pc);
         SyntaxNode parent = t.getParent();
@@ -106,10 +161,17 @@ public class CodeGenerator extends VisitorAdaptor {
         Obj o = t.getFunctDesignator().getDesignator().obj;
         int offset = o.getAdr() - Code.pc;
 
-        // provera dal je metoda da se gurne this
+        // provera dal je metoda
+        if (o.getLevel() > 0) {
+            // radi se invoke virtual
+            Code.put(Code.call);
+            Code.put2(offset);
 
-        Code.put(Code.call);
-        Code.put2(offset);
+        } else {
+            Code.put(Code.call);
+            Code.put2(offset);
+        }
+
     }
 
     public void visit(DesignatorStatementFunctCall t) {

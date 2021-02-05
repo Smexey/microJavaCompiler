@@ -11,7 +11,7 @@
             "mainClass": "${file}",
             "cwd": "${workspaceFolder}",
             "args": [
-                "testFiles/prg.mj",
+                "testFiles/codeTest41.mj",
                 ">logs/std/std.out.log",
                 // "2>logs/std/std.err.log"
             ],
