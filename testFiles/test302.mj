@@ -69,24 +69,26 @@ int niz[];
 			{
 				i++;
 				continue;
+				i=100;
 			}
 			if(i == 4) break;
 			i = inkrement(i, 1);
 		}while(i < 10);
+		print(i);
 		
 		if(i == 3 && verify()) print(-4);
 		else print(4);  
+
+		
 		
 		
 		read(niz[0]);
 		read(niz[1]);
 		read(niz[2]);
 		print(eol);
-		print(niz[2]);
 		print(sum(sum(niz[0], niz[1]), niz[2])); 
 			
 		print(eol); 
-		print(niz[2]);
 		print(inkrement(niz[2], 2));
 		
 		//print(verify() ? 't' : 'f');

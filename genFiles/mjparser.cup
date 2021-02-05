@@ -96,7 +96,9 @@ non terminal SuperClass;
 non terminal StartSwitch, StartDo, StartIf, FunctDesignator;
 non terminal ClassName;
 
-non terminal OrStart, CondStart, ThenStatement;
+non terminal OrStart, CondStart, ThenStatement, StartWhile;
+
+non terminal CaseStart, CaseEnd, CaseNum;
 
 //===================
 
@@ -204,7 +206,7 @@ Statement ::= DesignatorStatement SEMICOLN
             |
             (IfStatement) StartIf CondStart Condition RPAREN ThenStatement ElseStatementOptional
             |
-            (DoWhileStatement) StartDo Statement WHILE LPAREN Condition RPAREN SEMICOLN
+            (DoWhileStatement) StartDo Statement StartWhile LPAREN Condition RPAREN SEMICOLN
             |
             (SwitchStatement) StartSwitch LPAREN Expr RPAREN LBRACE CaseRepeat RBRACE
             |
@@ -228,6 +230,8 @@ CondStart::= (CondStart) LPAREN;
 
 StartIf::= (StartIf)IF;
 StartDo ::= (StartDo) DO;
+StartWhile::= (StartWhile) WHILE;
+
 StartSwitch ::= (StartSwitch) SWITCH;
 
 DesignatorStatement ::= Assignment
@@ -312,7 +316,11 @@ RelopExprOptional ::= (RelopExprExists) Relop Expr:Expr |(RelopExprEmpty) /* emp
 
 ElseStatementOptional ::= (ElseStatementExists) ElseStart Statement | (ElseStatementEmpty) /* empty */;
 ElseStart ::= (ElseStart)ELSE;
-CaseRepeat ::= (CaseRepeatExists) CaseRepeat CASE NUM:Num DDOTS StatementRepeat | /* empty */;
+CaseRepeat ::= (CaseRepeatExists) CaseRepeat CaseStart CaseNum CaseEnd StatementRepeat | /* empty */;
+CaseStart::= (CaseStart) CASE;
+CaseEnd::= (CaseEnd) DDOTS;
+CaseNum::= (CaseNum) NUM:Num;
+
 PrintWidthOptional ::= (PrintWidthExists) COMMA NUM | (PrintWidthEmpty) /* empty */;
 
 

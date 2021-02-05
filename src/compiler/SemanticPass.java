@@ -639,8 +639,8 @@ public class SemanticPass extends VisitorAdaptor {
     }
 
     public void visit(CaseRepeatExists t) {
-        if (!usedCaseValuesStack.peek().contains(t.getNum())) {
-            usedCaseValuesStack.peek().add(t.getNum());
+        if (!usedCaseValuesStack.peek().contains(t.getCaseNum().getNum())) {
+            usedCaseValuesStack.peek().add(t.getCaseNum().getNum());
         } else
             reportError("already used this num", t);
     }
