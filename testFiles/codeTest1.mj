@@ -31,19 +31,20 @@ class Cls1
 	Cls1 t;
 	Cls0 c0;
 	{
+		t = new Cls1;
 
-		
-		//print(t.b);
-		//t.b = 5;
-		//print(t.b);
+		t.c = new Cls0;
 
-		
-		//t.c = new Cls0;
+		print(t.c.a0);
+		t.c.a0 = 3;
+		print(t.c.a0);
+		t.c.a0++;
+		print(t.c.a0);
+		x = 1;
+		x++;
+		print(x);
 
-		//print(t.c.a0);
-		//t.c.a0 = 3;
-		//print(t.c.a0);
-		//print(eol);
+		print(eol);
 
 
 		c0 = new Cls0;
@@ -54,6 +55,7 @@ class Cls1
 
 		arr = new int[size];
 		arr[1]=100;
+
 
 
 		t = new Cls1;
@@ -69,8 +71,8 @@ class Cls1
 		t.carr[3].a0 = 3;
 
 		print(t.carr[3].a0);
-
 		
+
 		t.carr[3] = c0;
 		c0.a0 = 5;
 		
@@ -78,10 +80,13 @@ class Cls1
 		print(t.carr[3].a0);
 
 		
+	
 		print(t.carr[3].a0arr[5]);
 
 		t.carr[3].a0arr[5] = 35;
 		print(t.carr[3].a0arr[5]);
+
+		//dovde radi
 
 		t.carr[3].a0arr[5]++;
 		print(t.carr[3].a0arr[5]);
@@ -103,6 +108,6 @@ class Cls1
 		arr[0]++;
 		print(arr[0]);
 		print(eol);
-
+		
 	}
 }

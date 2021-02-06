@@ -34,6 +34,9 @@ public class SemanticPass extends VisitorAdaptor {
 
     SemanticPass() {
         Tab.currentScope().addToLocals(new Obj(Obj.Type, "bool", boolType));
+        globalFunctions.add(Tab.chrObj);
+        globalFunctions.add(Tab.lenObj);
+        globalFunctions.add(Tab.ordObj);
         reportInfo("==================SEMANTIC==============", null);
     }
 
@@ -92,7 +95,7 @@ public class SemanticPass extends VisitorAdaptor {
                 arrayBracketsDecl = false;
             }
 
-            if (currentClass != null) {
+            if (currentClass != null && currentMethod == null) {
                 o = new Obj(Obj.Fld, name, s);
                 currentClass.getType().getMembersTable().insertKey(o);
             } else {
@@ -136,7 +139,7 @@ public class SemanticPass extends VisitorAdaptor {
         }
     }
 
-    public void visit(ConstDeclRepeatDerived1 constDeclRep) {
+    public void visit(ConstDeclRepeatExists constDeclRep) {
         if (Tab.find(constDeclRep.getName()) == Tab.noObj) {
 
             Obj o = constDeclRep.getConstValue().obj;
@@ -259,6 +262,8 @@ public class SemanticPass extends VisitorAdaptor {
         }
     }
 
+    public Set<Obj> globalFunctions = new HashSet<>();
+
     public void visit(MethodDecl meth) {
         if (returnFound == null && currentMethod.getType() != Tab.noType) {
             reportError("no return found" + currentMethod.getType().getKind() + "", meth);
@@ -267,6 +272,10 @@ public class SemanticPass extends VisitorAdaptor {
 
         Tab.chainLocalSymbols(currentMethod);
         Tab.closeScope();
+
+        if (currentClass == null) {
+            globalFunctions.add(currentMethod);
+        }
         currentMethod = null;
         level--;
     }
@@ -492,11 +501,11 @@ public class SemanticPass extends VisitorAdaptor {
     }
 
     public void visit(ActParsMultiple actPars) {
-        actParsListStack.peek().add(actPars.getExpr().struct);
+        actParsListStack.peek().add(actPars.getActPar().getExpr().struct);
     }
 
     public void visit(ActParsSingle actPars) {
-        actParsListStack.peek().add(actPars.getExpr().struct);
+        actParsListStack.peek().add(actPars.getActPar().getExpr().struct);
     }
 
     // EXPR && TERM && FACTOR

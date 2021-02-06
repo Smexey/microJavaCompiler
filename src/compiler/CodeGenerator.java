@@ -1,9 +1,13 @@
 package compiler;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+
+import javax.swing.plaf.basic.BasicBorders.RadioButtonBorder;
 
 import ast.*;
 import compiler.CounterVisitor.FormParamCounter;
@@ -23,8 +27,11 @@ public class CodeGenerator extends VisitorAdaptor {
         return tvfSize;
     }
 
-    CodeGenerator(List<Obj> clsList) {
+    Set<Obj> globalFunctions;
+
+    CodeGenerator(List<Obj> clsList, Set<Obj> globalFunctions) {
         this.clsList = clsList;
+        this.globalFunctions = globalFunctions;
     }
 
     // moraju se porediti preko kind a ne referencom
@@ -80,12 +87,24 @@ public class CodeGenerator extends VisitorAdaptor {
         }
     }
 
+    public void visit(ReadStatement rd) {
+        // expr vec na steku
+        if (rd.getDesignator().obj.getType() == Tab.intType) {
+            Code.put(Code.read);
+        } else {
+            Code.put(Code.bread);
+        }
+        Code.store(rd.getDesignator().obj);
+    }
+
     public void visit(ConstFactor cf) {
         // ConstValueNum, ConstValueChar, ConstValueBool
         Obj o = new Obj(Obj.Con, "$", cf.getConstValue().obj.getType(), 0, 0);
         o.setAdr(cf.getConstValue().obj.getAdr());
         Code.load(o);
     }
+
+    private Map<String, Integer> tvfStartAdr = new HashMap<>();
 
     private void generateTVF() {
         GlobalVarConstCounter varCounter = new GlobalVarConstCounter();
@@ -96,6 +115,8 @@ public class CodeGenerator extends VisitorAdaptor {
         // mozda uzimam tip? sta ja znam?
 
         for (Obj cls : clsList) {
+            tvfStartAdr.put(cls.getName(), cnt);
+
             for (Obj member : cls.getType().getMembers()) {
                 if (member.getKind() == Obj.Meth) {
                     // generate tvf entry
@@ -146,9 +167,13 @@ public class CodeGenerator extends VisitorAdaptor {
         Code.put(Code.enter);
 
         // ako je cls onda ima this
+        int lvl = 0;
+        if (!globalFunctions.contains(t.obj)) {
+            lvl = 1;
+        }
 
-        Code.put(paramCnter.getCnt() + t.obj.getLevel());
-        Code.put(paramCnter.getCnt() + t.obj.getLevel() + varCnter.getCnt());
+        Code.put(paramCnter.getCnt() + lvl);
+        Code.put(paramCnter.getCnt() + lvl + varCnter.getCnt());
     }
 
     public void visit(MethodDecl t) {
@@ -158,14 +183,27 @@ public class CodeGenerator extends VisitorAdaptor {
     }
 
     public void visit(FunctCall t) {
+        currentlyCalledFunctions.pop();
+
         Obj o = t.getFunctDesignator().getDesignator().obj;
         int offset = o.getAdr() - Code.pc;
 
-        // provera dal je metoda
-        if (o.getLevel() > 0) {
+        // provera dal je metoda unutar klase
+
+        if (!globalFunctions.contains(o)) {
+
             // radi se invoke virtual
-            Code.put(Code.call);
-            Code.put2(offset);
+
+            Code.put(Code.getfield);
+            Code.put2(0);
+
+            Code.put(Code.invokevirtual);
+            for (char c : o.getName().toCharArray()) {
+                Code.put4(c);
+            }
+            Code.put4(-1);
+            // Code.put(Code.putstatic);
+            // Code.put2(cnt++);
 
         } else {
             Code.put(Code.call);
@@ -421,6 +459,21 @@ public class CodeGenerator extends VisitorAdaptor {
         inClass = false;
     }
 
+    // FunctDesignator
+    Stack<Obj> currentlyCalledFunctions = new Stack<>();
+
+    public void visit(FunctDesignator t) {
+        Obj o = t.getDesignator().obj;
+        currentlyCalledFunctions.push(o);
+    }
+
+    public void visit(ActPar t) {
+        if (!globalFunctions.contains(currentlyCalledFunctions.peek())) {
+            Code.put(Code.dup_x1);
+            Code.put(Code.pop);
+        }
+    }
+
     // DESIGNATOR
     public void visit(AssignmentNoErr t) {
         Code.store(t.getDesignator().obj);
@@ -441,111 +494,156 @@ public class CodeGenerator extends VisitorAdaptor {
             // klasni tip
             Code.put(Code.new_);
             Code.put2(t.getType().struct.getNumberOfFields() * 4);
+
+            // set tvf to the duped addr
+            Code.put(Code.dup);
+            String tvfName = t.getType().getTypeName();
+            Code.loadConst(tvfStartAdr.get(tvfName));
+            Code.put(Code.putfield);
+            Code.put2(0);
+
         }
     }
 
+    int dbg = 0;
+
     public void visit(DesignatorIdent t) {
+        dbg = t.getLine();
+
         if (t.getParent() instanceof Designator) {
-            Designator des = (Designator) t.getParent();
+            Designator des = (Designator) t.getParent();// moze biti i subdesrepeatexists
 
-            // ima neko posle mene?
-
-            // ako je rvalue ubacuje se
-            if (!(des.getParent() instanceof Assignment)) {
-                if (des.obj.getKind() == Obj.Fld) {
-                    // tipa je field a nema this ispred sebe
+            if (inClass) {
+                if (des.obj.getKind() == Obj.Fld && !t.obj.getName().equals("this")) {
+                    // tipa je field a nema this ispred sebe i nije sam on this
                     Code.put(Code.load_n + 0);
                 }
 
-                if (des.obj.getKind() == Obj.Meth && des.obj.getLevel() > 0) {
-                    // unutrasnja metoda
+                if (des.obj.getKind() == Obj.Meth && !(globalFunctions.contains(des.obj))) {
+                    // unutrasnja metoda pozvana unutar klase nema this ispred sebe
                     Code.put(Code.load_n + 0);
-                }
-
-                // da se ne loaduje ime funkcije
-                if (!(des.getParent() instanceof FunctDesignator))
-                    Code.load(t.obj);
-                else if (des.getSubDesignatorRepeat() instanceof SubDesignatorRepeatExists) {
-                    Code.load(t.obj);
-                }
-
-            } else {
-                // jeste assign ali jos nije apsolutna adresa izracunata
-                if (des.getArrayBracketsOptional() instanceof ArrayBracketsExists
-                        || des.getSubDesignatorRepeat() instanceof SubDesignatorRepeatExists) {
-                    Code.load(t.obj);
-                }
-            }
-        } else {
-            // instanceof SubDesignatorRepeat
-            SubDesignatorRepeatExists subdes = (SubDesignatorRepeatExists) t.getParent();
-            // stavljam svom parentu arrload jer parent nije poslednji
-
-            if (subdes.getParent() instanceof SubDesignatorRepeatExists) {
-                SubDesignatorRepeatExists myParent = (SubDesignatorRepeatExists) subdes.getParent();
-                if (myParent.getArrayBracketsOptional() instanceof ArrayBracketsExists) {
-                    Code.put(Code.aload);
+                    Code.put(Code.dup);
                 }
             }
 
-            if (subdes.getSubDesignatorRepeat() instanceof SubDesignatorRepeatExists) {
-                // ima neko posle mene -> svakako je load
+            // nisam poslednji u nizu svakako se loadujem
+            if (des.getArrayBracketsOptional() instanceof ArrayBracketsExists
+                    || des.getSubDesignatorRepeat() instanceof SubDesignatorRepeatExists) {
                 Code.load(t.obj);
             } else {
-                // nema niko posle mene -> da li sam u assignmentu?
+                // poslednji sam u nizu
+
+                // trazim root Designator
                 SyntaxNode x = t.getParent();
                 while (!(x instanceof Designator))
                     x = x.getParent();
 
-                if (!(x.getParent() instanceof Assignment) && !(x.getParent() instanceof FunctDesignator)) {
-                    Code.load(t.obj);
+                // ako je ovo sve bila funkcija ne ucitavam ime funkc
+                if (!(x.getParent() instanceof FunctDesignator)) {
+                    if (!(x.getParent() instanceof Assignment) && !(x.getParent() instanceof ReadStatement)) {
+                        Code.load(t.obj);
+                    } else {
+                        // ako jeste read ili assign ali ima arraybrackets posle
+                        if (des.getArrayBracketsOptional() instanceof ArrayBracketsExists) {
+                            Code.load(t.obj);
+                        }
+                    }
                 }
-
-                if ((x.getParent() instanceof Assignment)
-                        && subdes.getArrayBracketsOptional() instanceof ArrayBracketsExists) {
-                    Code.load(t.obj);
-                }
-            }
-        }
-        // ako je posle mene funkcija stavljam se na stek
-    }
-
-    public void visit(Designator t) {
-        // najdubljem trebam da vidim jel array i nije u assignmentu
-
-        SubDesignatorRepeatExists subdes = null;
-        if (t.getSubDesignatorRepeat() instanceof SubDesignatorRepeatExists) {
-            subdes = (SubDesignatorRepeatExists) t.getSubDesignatorRepeat();
-            while (subdes.getSubDesignatorRepeat() instanceof SubDesignatorRepeatExists) {
-                subdes = (SubDesignatorRepeatExists) subdes.getSubDesignatorRepeat();
-            }
-        }
-
-        if (subdes != null) {
-            // ako ima neki subdes
-            if (subdes.getArrayBracketsOptional() instanceof ArrayBracketsExists
-                    && !(t.getParent() instanceof Assignment)) {
-                // ako je array tip i ako nije designator u koji se upisuje (lvalue)
-                // TODO ne radi
-                if (t.getParent() instanceof DesignatorStatementIncrement
-                        || t.getParent() instanceof DesignatorStatementDecrement) {
-                    Code.put(Code.dup2);
-                }
-                Code.put(Code.aload);
             }
         } else {
-            // ako je designator jedini
-            if (t.getArrayBracketsOptional() instanceof ArrayBracketsExists && !(t.getParent() instanceof Assignment)) {
-                // ako je array tip i ako nije designator u koji se upisuje (lvalue)
+            SubDesignatorRepeatExists des = (SubDesignatorRepeatExists) t.getParent();// moze biti i subdesrepeatexists
 
-                if (t.getParent() instanceof DesignatorStatementIncrement
-                        || t.getParent() instanceof DesignatorStatementDecrement) {
-                    Code.put(Code.dup2);
+            // nisam poslednji u nizu svakako se loadujem
+            if (des.getArrayBracketsOptional() instanceof ArrayBracketsExists
+                    || des.getSubDesignatorRepeat() instanceof SubDesignatorRepeatExists) {
+                Code.load(t.obj);
+            } else {
+                // poslednji sam u nizu
+
+                // trazim root Designator
+                SyntaxNode x = t.getParent();
+                while (!(x instanceof Designator))
+                    x = x.getParent();
+
+                // ako je ovo sve bila funkcija ne ucitavam ime funkc
+                if (!(x.getParent() instanceof FunctDesignator)) {
+                    if (!(x.getParent() instanceof Assignment) && !(x.getParent() instanceof ReadStatement)) {
+
+                        if (x.getParent() instanceof DesignatorStatementIncrement
+                                || x.getParent() instanceof DesignatorStatementDecrement) {
+                            Code.put(Code.dup);
+                        }
+                        Code.load(t.obj);
+                    } else {
+                        // ako jeste read ili assign ali ima arraybrackets posle
+                        if (des.getArrayBracketsOptional() instanceof ArrayBracketsExists) {
+                            Code.load(t.obj);
+                        }
+                    }
+                } else {
+                    // ako nije bila globalna funkcija onda dupujem this
+                    if (!globalFunctions.contains(t.obj)) {
+                        Code.put(Code.dup);
+                    }
                 }
-                Code.put(Code.aload);
             }
-
         }
+
+    }
+
+    public void visit(ArrayBracketsExists t) {
+        if (t.getParent() instanceof NewOperatorFactor) {
+            return;
+        }
+
+        if (t.getParent() instanceof Designator) {
+            Designator des = (Designator) t.getParent();
+
+            if (des.getSubDesignatorRepeat() instanceof SubDesignatorRepeatExists) {
+                Code.put(Code.aload);
+            } else {
+                // poslednji sam ali array
+                // vidim dal sam assignment
+                SyntaxNode x = t.getParent();
+                while (!(x instanceof Designator))
+                    x = x.getParent();
+
+                if (!(x.getParent() instanceof FunctDesignator)) { // nema niza funkcija svakako?
+                    if (!(x.getParent() instanceof Assignment) && !(x.getParent() instanceof ReadStatement)) {
+
+                        if (x.getParent() instanceof DesignatorStatementIncrement
+                                || x.getParent() instanceof DesignatorStatementDecrement) {
+                            Code.put(Code.dup2);
+                        }
+                        Code.put(Code.aload);
+                    }
+                }
+            }
+        } else {
+            // kopija iznad
+            SubDesignatorRepeatExists des = (SubDesignatorRepeatExists) t.getParent();
+            if (des.getSubDesignatorRepeat() instanceof SubDesignatorRepeatExists) {
+                Code.put(Code.aload);
+            } else {
+                // poslednji sam ali array
+                // vidim dal sam assignment
+                SyntaxNode x = t.getParent();
+                while (!(x instanceof Designator))
+                    x = x.getParent();
+
+                if (!(x.getParent() instanceof FunctDesignator)) { // nema niza funkcija svakako?
+                    if (!(x.getParent() instanceof Assignment) && !(x.getParent() instanceof ReadStatement)) {
+
+                        if (x.getParent() instanceof DesignatorStatementIncrement
+                                || x.getParent() instanceof DesignatorStatementDecrement) {
+                            Code.put(Code.dup2);
+                        }
+                        Code.put(Code.aload);
+                    }
+                }
+            }
+        }
+
     }
 
 }

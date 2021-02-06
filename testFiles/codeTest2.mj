@@ -12,7 +12,7 @@ int a;
     bool b1,barr[];
 	int i1;
 	{
-        b1 = false;
+        b1 = true;
 		
 
 		i1 = f(5);

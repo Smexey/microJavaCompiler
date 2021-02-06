@@ -55,7 +55,8 @@ public class Test {
 
             if (semanticCheck.passed() && !p.errorDetected) {
                 File objFile = new File("output/program.obj");
-                CodeGenerator codeGenerator = new CodeGenerator(semanticCheck.getClsList());
+                CodeGenerator codeGenerator = new CodeGenerator(semanticCheck.getClsList(),
+                        semanticCheck.globalFunctions);
 
                 prog.traverseBottomUp(codeGenerator);
                 Code.dataSize = semanticCheck.getNVars();

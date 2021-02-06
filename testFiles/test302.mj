@@ -58,7 +58,7 @@ int niz[];
 		
 		//niz[2] = 4;
 
-		print(niz[1]);
+		print(niz[2]);
 		if(verify() || niz[2] == 4) print(ord('A')); 
 		else print(ord('a'));
 		
@@ -82,16 +82,17 @@ int niz[];
 		
 		
 		
-		read(niz[0]);
-		read(niz[1]);
-		read(niz[2]);
+		//read(niz[0]);
+		//read(niz[1]);
+		//read(niz[2]);
+		
 		print(eol);
 		print(sum(sum(niz[0], niz[1]), niz[2])); 
 			
 		print(eol); 
 		print(inkrement(niz[2], 2));
 		
-		//print(verify() ? 't' : 'f');
+		print(verify() ? 't' : 'f');
 	}
 }
 

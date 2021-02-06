@@ -85,7 +85,7 @@ non terminal DesignatorStatement, SubDesignatorRepeat, ArrayBracketsOptional;
 
 non terminal Assignop, Mulop, Addop;
 non terminal MinusOptional;
-non terminal ActPars, ActParsOptional;
+non terminal ActPars, ActParsOptional, ActPar;
 
 non terminal Relop, RelopExprOptional;
 
@@ -294,8 +294,8 @@ FunctCall ::= (FunctCall) FunctDesignator:FunctDesignator LPAREN ActParsOptional
 FunctDesignator ::= (FunctDesignator) Designator:func;
 
 ActParsOptional ::= (ActParsExists) ActPars | (ActParsEmpty) /* empty */;
-ActPars ::= (ActParsMultiple) ActPars COMMA Expr:Expr | (ActParsSingle) Expr:Expr;
-
+ActPars ::= (ActParsMultiple) ActPars COMMA ActPar | (ActParsSingle) ActPar;
+ActPar::= (ActPar) Expr:Expr;
 
 Condition ::= (ConditionNoErr) CondTerm:CondTerm CondTermOrRepeat:OtherCondTerms | error;
 CondTermOrRepeat ::= (CondTermOrRepeatExists) CondTermOrRepeat:OtherCondTerms OrStart CondTerm:CondTerm | /* empty */;

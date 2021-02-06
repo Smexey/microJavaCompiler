@@ -15,10 +15,11 @@ class A
 			return a+5;
 		}
 		
-		int f()
-		int x;
+		int f(int x,int x2)
+		int y;
 		{
-			return a+g(1);
+			y = g(200);
+			return x+x2+y;
 		}
 
 		
@@ -28,9 +29,14 @@ class B extends A
 {
 	
 	{
-		int f()
+		int f(int x,int x2)
 		{
-			return 500;
+			return x+x2;
+		}
+
+		int g(int a)
+		{
+			return 100;
 		}
 	}
 }
@@ -45,10 +51,10 @@ A a;
 	void main() 
 	int i;
 	{
-		a = new A;
+		a = new B;
 		a.a = 100;
 
-		i = a.f();
+		i = a.f(5,7);
 
 		print(i);
 	}
