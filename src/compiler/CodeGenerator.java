@@ -334,7 +334,7 @@ public class CodeGenerator extends VisitorAdaptor {
     int prevCaseEnd = -1;
 
     public void visit(CaseRepeatExists t) {
-        Code.putJump(Code.pc + 3);
+        Code.putJump(Code.pc + 4);
         prevCaseEnd = Code.pc - 2;
     }
 
@@ -389,12 +389,13 @@ public class CodeGenerator extends VisitorAdaptor {
     }
 
     public void visit(SwitchStatement t) {
-        fixup(breakLists.peek());
-        breakLists.pop();
 
         if (lastCases.peek() != -1)
             Code.fixup(lastCases.peek());
         lastCases.pop();
+        Code.put(Code.pop);
+        fixup(breakLists.peek());
+        breakLists.pop();
     }
 
     public void visit(StartWhile t) {

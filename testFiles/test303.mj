@@ -103,7 +103,7 @@ int tezinaK, tezinaS;
 		predmeti[3].tezina = 0;
 
 		do{
-			predmeti[i].postaviTezinu(t);	//ne radi
+			predmeti[i].postaviTezinu(t);	
 			i++;
 		}while(i<6);
 		
@@ -140,6 +140,7 @@ int tezinaK, tezinaS;
 		print(zapreminaK); print(eol);
 		print(tezinaS); print(eol);
 		print(tezinaK); print(eol);
+
 		
 		i = 0;
 		do{
