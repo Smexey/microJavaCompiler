@@ -100,6 +100,8 @@ non terminal OrStart, CondStart, ThenStatement, StartWhile;
 
 non terminal CaseStart, CaseEnd, CaseNum;
 
+non terminal TernaryDdots;
+
 //===================
 
 
@@ -266,10 +268,12 @@ MinusOptional ::= (MinusExists) SUB | (MinusEmpty) /* empty */;
 
 
 //new ziza ternarni
-Expr ::= (TernaryOperatorExpr) SmolExpr:TernConditionExpr QMARK SmolExpr:Truthy DDOTS SmolExpr:Falsey
+Expr ::= (TernaryOperatorExpr) SmolExpr:TernConditionExpr QMARK SmolExpr:Truthy TernaryDdots SmolExpr:Falsey
         |
         (NoTernExpr) SmolExpr:SmolExpr
         ;
+
+TernaryDdots::= (TernaryDdots) DDOTS;
 
 SmolExpr ::=  (SmolExpr) MinusOptional Term:Term TermAddopRepeat:OtherTerms;
 

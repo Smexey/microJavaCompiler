@@ -78,6 +78,7 @@ public class CodeGenerator extends VisitorAdaptor {
 
     public void visit(PrintStatement print) {
         // expr vec na steku
+        dbg = print.getLine();
         if (print.getExpr().struct == Tab.intType) {
             Code.loadConst(5);// sirina
             Code.put(Code.print);
@@ -346,7 +347,6 @@ public class CodeGenerator extends VisitorAdaptor {
     }
 
     public void visit(ThenStatement t) {
-
         IfStatement parent = (IfStatement) t.getParent();
         if (parent.getElseStatementOptional() instanceof ElseStatementExists) {
             Code.putJump(0);
@@ -411,6 +411,29 @@ public class CodeGenerator extends VisitorAdaptor {
     public void visit(ContinueStatement t) {
         Code.putJump(0);
         continueLists.peek().add(Code.pc - 2);
+    }
+
+    int ternEndIfAdr = -1;
+    int ternElseAdr = -1;
+
+    public void visit(SmolExpr t) {
+        if (t.getParent() instanceof TernaryOperatorExpr) {
+            TernaryOperatorExpr parent = (TernaryOperatorExpr) t.getParent();
+            if (parent.getSmolExpr() == t) {
+                Code.put(Code.const_n + 0);
+                Code.putFalseJump(Code.ne, 0);
+                ternElseAdr = Code.pc - 2;
+            } else if (parent.getSmolExpr1() == t) {
+                Code.putJump(0);
+                ternEndIfAdr = Code.pc - 2;
+            } else if (parent.getSmolExpr2() == t) {
+                Code.fixup(ternEndIfAdr);
+            }
+        }
+    }
+
+    public void visit(TernaryDdots t) {
+        Code.fixup(ternElseAdr);
     }
 
     public void visit(CondFact t) {
@@ -616,7 +639,11 @@ public class CodeGenerator extends VisitorAdaptor {
                                 || x.getParent() instanceof DesignatorStatementDecrement) {
                             Code.put(Code.dup2);
                         }
-                        Code.put(Code.aload);
+                        if (des.obj.getType() == Tab.charType || des.obj.getType().getKind() == boolType.getKind()) {
+                            Code.put(Code.baload);
+                        } else {
+                            Code.put(Code.aload);
+                        }
                     }
                 }
             }
@@ -625,6 +652,7 @@ public class CodeGenerator extends VisitorAdaptor {
             SubDesignatorRepeatExists des = (SubDesignatorRepeatExists) t.getParent();
             if (des.getSubDesignatorRepeat() instanceof SubDesignatorRepeatExists) {
                 Code.put(Code.aload);
+
             } else {
                 // poslednji sam ali array
                 // vidim dal sam assignment
@@ -639,7 +667,13 @@ public class CodeGenerator extends VisitorAdaptor {
                                 || x.getParent() instanceof DesignatorStatementDecrement) {
                             Code.put(Code.dup2);
                         }
-                        Code.put(Code.aload);
+                        if (des.getDesignatorIdent().obj.getType().getElemType() == Tab.charType
+                                || des.getDesignatorIdent().obj.getType().getElemType().getKind() == boolType
+                                        .getKind()) {
+                            Code.put(Code.baload);
+                        } else {
+                            Code.put(Code.aload);
+                        }
                     }
                 }
             }

@@ -1,0 +1,36 @@
+// Test301
+
+program test301
+
+	int niz[];
+	char nizch[];
+
+class A 
+
+{
+    char nizch[];
+    {
+        
+    }
+}
+	A a;
+{
+	void main()	
+		int bodovi;
+		bool bt;
+	{
+        nizch = new char[5];
+
+        nizch[1]  = 'c';
+        print(nizch[1]);
+
+        a = new A;
+        a.nizch = new char[5];
+
+        a.nizch[3] = 'x';
+        print(a.nizch[3]);
+
+	}
+}
+
+

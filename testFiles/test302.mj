@@ -31,13 +31,9 @@ int niz[];
 	}	
 	
 	void main()
-	char c;
 	{
-		
 		if(1!=1) print(-6);
 		else print(0);  
-
-
 			
 		ibool = false;
 		i = 0;
@@ -53,12 +49,7 @@ int niz[];
 		niz = new int[3];
 		niz[0] = 1;
 		niz[1] = 2;
-
-		niz[2] = sum(niz[0],niz[1])+1;
-		
-		//niz[2] = 4;
-
-		print(niz[2]);
+		niz[2] = sum(niz[1], niz[0]) + 1;
 		if(verify() || niz[2] == 4) print(ord('A')); 
 		else print(ord('a'));
 		
@@ -69,25 +60,20 @@ int niz[];
 			{
 				i++;
 				continue;
-				i=100;
 			}
 			if(i == 4) break;
 			i = inkrement(i, 1);
 		}while(i < 10);
-		print(i);
 		
 		if(i == 3 && verify()) print(-4);
 		else print(4);  
-
 		
-		
-		
-		//read(niz[0]);
-		//read(niz[1]);
-		//read(niz[2]);
-		
+		read(niz[0]);
+		read(niz[1]);
+		read(niz[2]);
 		print(eol);
-		print(sum(sum(niz[0], niz[1]), niz[2])); 
+		
+		print(sum (sum(niz[0], niz[1]), niz[2])); 
 			
 		print(eol); 
 		print(inkrement(niz[2], 2));
