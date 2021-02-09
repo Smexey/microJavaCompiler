@@ -3,7 +3,7 @@
 program test_303
 
 const int cinilac = 4, delilac = 3;
-
+const int jedan = 1;
 class Predmet
 {
 	 int tezina;
@@ -74,7 +74,7 @@ int tezinaK, tezinaS;
 		k2 = new Kvadar;
 		k3 = new Kvadar;
 
-		s1.postaviPoluprecnik(1);
+		s1.postaviPoluprecnik(jedan);
 		s2.postaviPoluprecnik(2);
 		s3.postaviPoluprecnik(3);
 

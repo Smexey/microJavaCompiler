@@ -195,7 +195,7 @@ public class SemanticPass extends VisitorAdaptor {
         // napravi novi tip mora novi struct zbog poredjenja structova kasnije?
         currentClass = Tab.insert(Obj.Type, t.getName(), new Struct(Struct.Class));
         Tab.openScope();
-        Tab.insert(Obj.Fld, "tvf", Tab.nullType);
+        Tab.insert(Obj.Fld, "$tvf" + t.getName(), Tab.nullType);
     }
 
     public void visit(ClassDecl t) {
@@ -229,8 +229,10 @@ public class SemanticPass extends VisitorAdaptor {
                 Iterator<Obj> it = sup.getType().getMembers().iterator();
                 while (it.hasNext()) {
                     Obj o = it.next();
-                    if (o.getKind() == Obj.Fld)
+                    if (o.getKind() == Obj.Fld && !o.getName().startsWith("$tvf")) {
                         Tab.currentScope().addToLocals(o);// doda po referenci jel dobro?
+                    }
+
                 }
 
             } else
